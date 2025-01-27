@@ -2,33 +2,40 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
-class UserSignupScreen extends StatefulWidget {
-  const UserSignupScreen({super.key});
+class TherapistSignupScreen extends StatefulWidget {
+  const TherapistSignupScreen({super.key});
 
   @override
-  State<UserSignupScreen> createState() => _UserSignupScreenState();
+  State<TherapistSignupScreen> createState() => _TherapistSignupScreenState();
 }
 
-class _UserSignupScreenState extends State<UserSignupScreen> {
+class _TherapistSignupScreenState extends State<TherapistSignupScreen> {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _confirmPasswordController =
       TextEditingController();
+  final TextEditingController _qualificationController =
+      TextEditingController();
+  final TextEditingController _contactController = TextEditingController();
 
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  void _signUpUser() async {
+  void _signUpTherapist() async {
     final name = _nameController.text.trim();
     final email = _emailController.text.trim();
     final password = _passwordController.text.trim();
     final confirmPassword = _confirmPasswordController.text.trim();
+    final qualification = _qualificationController.text.trim();
+    final contactNumber = _contactController.text.trim();
 
     if (name.isEmpty ||
         email.isEmpty ||
         password.isEmpty ||
-        confirmPassword.isEmpty) {
+        confirmPassword.isEmpty ||
+        qualification.isEmpty ||
+        contactNumber.isEmpty) {
       _showSnackBar("Please fill all fields");
       return;
     }
@@ -48,10 +55,12 @@ class _UserSignupScreenState extends State<UserSignupScreen> {
       // Get user ID
       final uid = userCredential.user?.uid;
 
-      // Add user data to Firestore
-      await _firestore.collection('users').doc(uid).set({
+      // Add therapist data to Firestore
+      await _firestore.collection('therapists').doc(uid).set({
         'name': name,
         'email': email,
+        'qualification': qualification,
+        'contactNumber': contactNumber,
         'uid': uid,
         'createdAt': FieldValue.serverTimestamp(),
       });
@@ -78,7 +87,7 @@ class _UserSignupScreenState extends State<UserSignupScreen> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         title: Text(
-          "Create Account",
+          "Create Therapist Account",
           style: TextStyle(
             fontSize: 28,
             fontWeight: FontWeight.bold,
@@ -104,10 +113,10 @@ class _UserSignupScreenState extends State<UserSignupScreen> {
             child: Column(
               children: [
                 SizedBox(height: 120),
-                // Name Field
+                // Therapist Name Field
                 _buildTextField(
                   controller: _nameController,
-                  label: 'Full Name',
+                  label: 'Therapist Name',
                   hintText: 'Enter your full name',
                   icon: Icons.person,
                 ),
@@ -141,11 +150,30 @@ class _UserSignupScreenState extends State<UserSignupScreen> {
                   icon: Icons.lock,
                   obscureText: true,
                 ),
+                SizedBox(height: 16),
+
+                // Qualification Field
+                _buildTextField(
+                  controller: _qualificationController,
+                  label: 'Qualification',
+                  hintText: 'Enter your qualification',
+                  icon: Icons.school,
+                ),
+                SizedBox(height: 16),
+
+                // Contact Number Field
+                _buildTextField(
+                  controller: _contactController,
+                  label: 'Contact Number',
+                  hintText: 'Enter your contact number',
+                  icon: Icons.phone,
+                  keyboardType: TextInputType.phone,
+                ),
                 SizedBox(height: 30),
 
                 // Submit Button
                 ElevatedButton(
-                  onPressed: _signUpUser,
+                  onPressed: _signUpTherapist,
                   style: ElevatedButton.styleFrom(
                     padding:
                         EdgeInsets.symmetric(vertical: 16.0, horizontal: 80.0),
