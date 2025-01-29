@@ -1,10 +1,15 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:mindmend/choosen%20screen.dart';
 import 'package:mindmend/firebase_options.dart';
 import 'package:mindmend/therapist/therapist%20signup.dart';
+import 'package:mindmend/user/user%20home.dart';
+import 'package:mindmend/user/user%20login.dart';
+import 'package:mindmend/user/user%20profile%20screen.dart';
 import 'package:mindmend/user/user%20signup%20screen.dart';
 
 Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
@@ -38,7 +43,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: const TherapistSignupScreen(),
+      home: UserSignupScreen(),
     );
   }
 }
