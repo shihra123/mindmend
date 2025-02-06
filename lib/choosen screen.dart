@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:mindmend/admin/admin%20login.dart';
+import 'package:mindmend/therapist/therapist%20login.dart';
+import 'package:mindmend/user/user%20login.dart';
 
 class ChooseRoleScreen extends StatefulWidget {
   const ChooseRoleScreen({super.key});
@@ -20,10 +23,26 @@ class _ChooseRoleScreenState extends State<ChooseRoleScreen> {
 
     // Navigation logic (Replace with your actual screens)
     if (_selectedRole == "Admin") {
+      Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => AdminLoginScreen(),
+          ));
       // Navigator.push(context, MaterialPageRoute(builder: (context) => AdminSignupScreen()));
     } else if (_selectedRole == "User") {
+      Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => UserLoginScreen(),
+          ));
+
       // Navigator.push(context, MaterialPageRoute(builder: (context) => UserSignupScreen()));
     } else if (_selectedRole == "Therapist") {
+      Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => TherapistLoginScreen(),
+          ));
       // Navigator.push(context, MaterialPageRoute(builder: (context) => TherapistSignupScreen()));
     }
   }

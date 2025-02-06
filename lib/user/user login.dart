@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:mindmend/user/user%20forgot%20password.dart';
 
 class UserLoginScreen extends StatefulWidget {
   const UserLoginScreen({super.key});
@@ -128,6 +129,12 @@ class _UserLoginScreenState extends State<UserLoginScreen> {
                 // Forgot Password
                 TextButton(
                   onPressed: () {
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => ForgotPasswordScreen(),
+                        ));
+
                     // Implement password reset
                   },
                   child: Text(
