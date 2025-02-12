@@ -34,20 +34,12 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
           userData = docSnapshot.data() as Map<String, dynamic>?;
           isLoading = false;
         });
-      } else {
-        _showSnackBar("User data not found");
-      }
+      } else {}
     } catch (e) {
-      _showSnackBar("Error fetching profile data");
       setState(() {
         isLoading = false;
       });
     }
-  }
-
-  void _showSnackBar(String message) {
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text(message)));
   }
 
   // Placeholder for the Edit Profile screen/navigation
@@ -66,7 +58,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     try {
       await _auth.signOut();
     } catch (e) {
-      _showSnackBar("Error logging out");
+      ("Error logging out");
     }
   }
 
