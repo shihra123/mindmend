@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:mindmend/therapist/therapist%20meditation.dart';
+import 'package:mindmend/therapist/therapist%20messaging%20screen.dart';
 import 'package:mindmend/therapist/therapist%20notification.dart';
+import 'package:mindmend/therapist/view%20appointment.dart';
 
 class TherapistHomePage extends StatefulWidget {
   @override
@@ -12,8 +15,8 @@ class _TherapistHomePageState extends State<TherapistHomePage> {
   final List<Widget> _pages = [
     TherapistNotificationsScreen(),
     MeditationScreen(),
-    AppointmentsScreen(),
-    MessagingScreen(),
+    TherapistAppointmentsScreen(),
+    ChatScreen(),
   ];
 
   void _onItemTapped(int index) {
@@ -90,51 +93,6 @@ class NotificationsScreen extends StatelessWidget {
       ),
       body: Center(
           child: Text("No new notifications", style: TextStyle(fontSize: 18))),
-    );
-  }
-}
-
-class MeditationScreen extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text("Meditation"),
-        backgroundColor: Colors.deepOrangeAccent,
-      ),
-      body: Center(
-          child: Text("Guided Meditation Sessions",
-              style: TextStyle(fontSize: 18))),
-    );
-  }
-}
-
-class AppointmentsScreen extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text("Appointments"),
-        backgroundColor: Colors.deepOrangeAccent,
-      ),
-      body: Center(
-          child:
-              Text("Manage Your Appointments", style: TextStyle(fontSize: 18))),
-    );
-  }
-}
-
-class MessagingScreen extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text("Messages"),
-        backgroundColor: Colors.deepOrangeAccent,
-      ),
-      body: Center(
-          child:
-              Text("Chat with Your Patients", style: TextStyle(fontSize: 18))),
     );
   }
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:razorpay_flutter/razorpay_flutter.dart';
 
 class BookAppointmentScreen extends StatefulWidget {
   @override
@@ -11,6 +12,7 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
   final TextEditingController _dateController = TextEditingController();
   final TextEditingController _timeController = TextEditingController();
   String? _selectedTherapist;
+  late Razorpay _razorpay; // Used 'late' to ensure initialization
 
   final List<String> _therapists = [
     "Dr. Smith - Psychologist",
@@ -19,6 +21,23 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
     "Dr. Williams - Therapist",
     "Dr. Davis - Mental Health Coach",
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    _razorpay = Razorpay();
+
+    // Razorpay event listeners
+    _razorpay.on(Razorpay.EVENT_PAYMENT_SUCCESS, _handlePaymentSuccess);
+    _razorpay.on(Razorpay.EVENT_PAYMENT_ERROR, _handlePaymentError);
+    _razorpay.on(Razorpay.EVENT_EXTERNAL_WALLET, _handleExternalWallet);
+  }
+
+  @override
+  void dispose() {
+    _razorpay.clear(); // Cleaning up the Razorpay instance
+    super.dispose();
+  }
 
   void _selectDate() async {
     DateTime? pickedDate = await showDatePicker(
@@ -46,35 +65,64 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
     }
   }
 
-  void _bookAppointment() {
-    String name = _nameController.text;
-    String date = _dateController.text;
-    String time = _timeController.text;
+  void _handlePaymentSuccess(PaymentSuccessResponse response) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text("Payment Successful! Appointment Confirmed."),
+        backgroundColor: Colors.green,
+      ),
+    );
+  }
 
-    if (name.isNotEmpty &&
-        date.isNotEmpty &&
-        time.isNotEmpty &&
-        _selectedTherapist != null) {
+  void _handlePaymentError(PaymentFailureResponse response) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text("Payment Failed! Try Again."),
+        backgroundColor: Colors.red,
+      ),
+    );
+  }
+
+  void _handleExternalWallet(ExternalWalletResponse response) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text("Payment via External Wallet: ${response.walletName}"),
+        backgroundColor: Colors.blue,
+      ),
+    );
+  }
+
+  void _startPayment() {
+    if (_nameController.text.isEmpty ||
+        _dateController.text.isEmpty ||
+        _timeController.text.isEmpty ||
+        _selectedTherapist == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(
-              "Appointment booked with $_selectedTherapist for $name on $date at $time"),
-          backgroundColor: Colors.green,
-        ),
-      );
-      _nameController.clear();
-      _dateController.clear();
-      _timeController.clear();
-      setState(() {
-        _selectedTherapist = null;
-      });
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text("Please fill all fields"),
+          content: Text("Please fill in all details before proceeding."),
           backgroundColor: Colors.red,
         ),
       );
+      return;
+    }
+
+    var options = {
+      "key": "rzp_test_YourKeyHere", // Replace with your Razorpay key
+      "amount": 50000, // Amount in paise (500 INR)
+      "currency": "INR",
+      "name": "Mind Mend",
+      "description": "Therapy Appointment",
+      "prefill": {
+        "contact": "9999999999",
+        "email": "user@example.com",
+      },
+      "theme": {"color": "#FF6F00"}
+    };
+
+    try {
+      _razorpay.open(options);
+    } catch (e) {
+      print("Error: $e");
     }
   }
 
@@ -93,15 +141,26 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
             end: Alignment.bottomRight,
           ),
         ),
-        child: Padding(
+        child: SingleChildScrollView(
           padding: EdgeInsets.all(16.0),
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              Text(
+                "Select Therapist",
+                style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white),
+              ),
+              SizedBox(height: 8),
               DropdownButtonFormField<String>(
                 value: _selectedTherapist,
                 decoration: InputDecoration(
-                  labelText: "Select Therapist",
-                  border: OutlineInputBorder(),
+                  filled: true,
+                  fillColor: Colors.white,
+                  border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10)),
                 ),
                 items: _therapists.map((therapist) {
                   return DropdownMenuItem(
@@ -115,46 +174,57 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
                   });
                 },
               ),
-              SizedBox(height: 12),
+              SizedBox(height: 16),
               TextField(
                 controller: _nameController,
                 decoration: InputDecoration(
                   labelText: "Your Name",
-                  border: OutlineInputBorder(),
+                  filled: true,
+                  fillColor: Colors.white,
+                  border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10)),
                 ),
               ),
-              SizedBox(height: 12),
+              SizedBox(height: 16),
               TextField(
                 controller: _dateController,
                 readOnly: true,
                 onTap: _selectDate,
                 decoration: InputDecoration(
                   labelText: "Preferred Date",
-                  border: OutlineInputBorder(),
+                  filled: true,
+                  fillColor: Colors.white,
+                  border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10)),
                   suffixIcon: Icon(Icons.calendar_today),
                 ),
               ),
-              SizedBox(height: 12),
+              SizedBox(height: 16),
               TextField(
                 controller: _timeController,
                 readOnly: true,
                 onTap: _selectTime,
                 decoration: InputDecoration(
                   labelText: "Preferred Time",
-                  border: OutlineInputBorder(),
+                  filled: true,
+                  fillColor: Colors.white,
+                  border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10)),
                   suffixIcon: Icon(Icons.access_time),
                 ),
               ),
-              SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: _bookAppointment,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.deepOrangeAccent,
-                  padding: EdgeInsets.symmetric(vertical: 12, horizontal: 24),
-                  textStyle:
-                      TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              SizedBox(height: 24),
+              Center(
+                child: ElevatedButton(
+                  onPressed: _startPayment,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.deepOrangeAccent,
+                    padding: EdgeInsets.symmetric(vertical: 14, horizontal: 32),
+                    textStyle:
+                        TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  child: Text("Proceed to Payment"),
                 ),
-                child: Text("Book Appointment"),
               ),
             ],
           ),
