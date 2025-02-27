@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:mindmend/user/edit%20profile%20screen.dart';
+import 'package:mindmend/user/editprofilescreen.dart';
 
 class UserProfileScreen extends StatefulWidget {
   @override

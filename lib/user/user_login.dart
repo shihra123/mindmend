@@ -1,7 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:mindmend/user/user%20forgot%20password.dart';
-import 'package:mindmend/user/user%20home.dart';
+import 'package:mindmend/user/user_forgot_password.dart';
+import 'package:mindmend/user/user_home.dart';
 
 class UserLoginScreen extends StatefulWidget {
   const UserLoginScreen({super.key});

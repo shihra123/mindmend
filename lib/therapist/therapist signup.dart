@@ -3,7 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class TherapistSignupScreen extends StatefulWidget {
-  const TherapistSignupScreen({super.key});
+  const TherapistSignupScreen({Key? key}) : super(key: key);
 
   @override
   State<TherapistSignupScreen> createState() => _TherapistSignupScreenState();
@@ -13,11 +13,10 @@ class _TherapistSignupScreenState extends State<TherapistSignupScreen> {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  final TextEditingController _confirmPasswordController =
-      TextEditingController();
-  final TextEditingController _qualificationController =
-      TextEditingController();
+  final TextEditingController _confirmPasswordController = TextEditingController();
+  final TextEditingController _qualificationController = TextEditingController();
   final TextEditingController _contactController = TextEditingController();
+  final TextEditingController _feesController = TextEditingController();
 
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -29,13 +28,15 @@ class _TherapistSignupScreenState extends State<TherapistSignupScreen> {
     final confirmPassword = _confirmPasswordController.text.trim();
     final qualification = _qualificationController.text.trim();
     final contactNumber = _contactController.text.trim();
+    final fees = _feesController.text.trim();
 
     if (name.isEmpty ||
         email.isEmpty ||
         password.isEmpty ||
         confirmPassword.isEmpty ||
         qualification.isEmpty ||
-        contactNumber.isEmpty) {
+        contactNumber.isEmpty ||
+        fees.isEmpty) {
       _showSnackBar("Please fill all fields");
       return;
     }
@@ -61,6 +62,7 @@ class _TherapistSignupScreenState extends State<TherapistSignupScreen> {
         'email': email,
         'qualification': qualification,
         'contactNumber': contactNumber,
+        'fees': fees,
         'uid': uid,
         'createdAt': FieldValue.serverTimestamp(),
       });
@@ -75,8 +77,7 @@ class _TherapistSignupScreenState extends State<TherapistSignupScreen> {
   }
 
   void _showSnackBar(String message) {
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text(message)));
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
   }
 
   @override
@@ -84,9 +85,9 @@ class _TherapistSignupScreenState extends State<TherapistSignupScreen> {
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
+        backgroundColor: Colors.white,
         elevation: 0,
-        title: Text(
+        title: const Text(
           "Create Therapist Account",
           style: TextStyle(
             fontSize: 28,
@@ -112,7 +113,7 @@ class _TherapistSignupScreenState extends State<TherapistSignupScreen> {
             padding: const EdgeInsets.all(20.0),
             child: Column(
               children: [
-                SizedBox(height: 120),
+                const SizedBox(height: 120),
                 // Therapist Name Field
                 _buildTextField(
                   controller: _nameController,
@@ -120,7 +121,7 @@ class _TherapistSignupScreenState extends State<TherapistSignupScreen> {
                   hintText: 'Enter your full name',
                   icon: Icons.person,
                 ),
-                SizedBox(height: 16),
+                const SizedBox(height: 16),
 
                 // Email Field
                 _buildTextField(
@@ -130,7 +131,7 @@ class _TherapistSignupScreenState extends State<TherapistSignupScreen> {
                   icon: Icons.email,
                   keyboardType: TextInputType.emailAddress,
                 ),
-                SizedBox(height: 16),
+                const SizedBox(height: 16),
 
                 // Password Field
                 _buildTextField(
@@ -140,7 +141,7 @@ class _TherapistSignupScreenState extends State<TherapistSignupScreen> {
                   icon: Icons.lock,
                   obscureText: true,
                 ),
-                SizedBox(height: 16),
+                const SizedBox(height: 16),
 
                 // Confirm Password Field
                 _buildTextField(
@@ -150,7 +151,7 @@ class _TherapistSignupScreenState extends State<TherapistSignupScreen> {
                   icon: Icons.lock,
                   obscureText: true,
                 ),
-                SizedBox(height: 16),
+                const SizedBox(height: 16),
 
                 // Qualification Field
                 _buildTextField(
@@ -159,7 +160,7 @@ class _TherapistSignupScreenState extends State<TherapistSignupScreen> {
                   hintText: 'Enter your qualification',
                   icon: Icons.school,
                 ),
-                SizedBox(height: 16),
+                const SizedBox(height: 16),
 
                 // Contact Number Field
                 _buildTextField(
@@ -169,25 +170,35 @@ class _TherapistSignupScreenState extends State<TherapistSignupScreen> {
                   icon: Icons.phone,
                   keyboardType: TextInputType.phone,
                 ),
-                SizedBox(height: 30),
+                const SizedBox(height: 16),
+
+                // Fees Field
+                _buildTextField(
+                  controller: _feesController,
+                  label: 'Consultation Fees',
+                  hintText: 'Enter your consultation fees',
+                  icon: Icons.attach_money,
+                  keyboardType: TextInputType.number,
+                ),
+                const SizedBox(height: 30),
 
                 // Submit Button
                 ElevatedButton(
                   onPressed: _signUpTherapist,
                   style: ElevatedButton.styleFrom(
-                    padding:
-                        EdgeInsets.symmetric(vertical: 16.0, horizontal: 80.0),
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 16.0, horizontal: 80.0),
                     backgroundColor: Colors.deepOrangeAccent,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(30.0),
                     ),
                     elevation: 5,
-                    textStyle: TextStyle(
+                    textStyle: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  child: Text("Sign Up"),
+                  child: const Text("Sign Up"),
                 ),
               ],
             ),
@@ -209,7 +220,7 @@ class _TherapistSignupScreenState extends State<TherapistSignupScreen> {
     return Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(30.0),
-        boxShadow: [
+        boxShadow: const [
           BoxShadow(
             color: Colors.black26,
             blurRadius: 10,
@@ -219,23 +230,17 @@ class _TherapistSignupScreenState extends State<TherapistSignupScreen> {
       ),
       child: TextField(
         controller: controller,
-        obscureText: obscureText,
-        keyboardType: keyboardType,
         decoration: InputDecoration(
-          prefixIcon: Icon(icon, color: Colors.deepOrange),
           labelText: label,
           hintText: hintText,
-          hintStyle: TextStyle(color: Colors.grey[600]),
-          labelStyle: TextStyle(color: Colors.deepOrange),
-          filled: true,
-          fillColor: Colors.white,
+          prefixIcon: Icon(icon),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 20.0),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(30.0),
-            borderSide: BorderSide.none,
           ),
-          contentPadding: EdgeInsets.symmetric(vertical: 15, horizontal: 20),
         ),
+        obscureText: obscureText,
+        keyboardType: keyboardType,
       ),
-    );
-  }
+    );  }
 }

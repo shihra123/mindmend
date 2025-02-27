@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:mindmend/user/home%20screen.dart';
-import 'package:mindmend/user/user%20appointment%20screen.dart';
-import 'package:mindmend/user/user%20messaging.dart';
-import 'package:mindmend/user/user%20notification%20screen.dart';
-import 'package:mindmend/user/user%20profile%20screen.dart';
-// Messaging Screen
+import 'package:mindmend/user/homescreen.dart';
+import 'package:mindmend/user/userappointmentscreen.dart';
+import 'package:mindmend/user/user_messaging.dart';
+import 'package:mindmend/user/user_profile_screen.dart';
+import 'package:mindmend/user/userappointmentscreen.dart';
+
+import 'user_notification screen.dart';
 
 class UserHomePage extends StatefulWidget {
   const UserHomePage({super.key});

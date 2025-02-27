@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:razorpay_flutter/razorpay_flutter.dart';
+import 'payment_process_screen.dart'; // Import the payment process screen
 
 class BookAppointmentScreen extends StatefulWidget {
   @override
@@ -12,7 +12,6 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
   final TextEditingController _dateController = TextEditingController();
   final TextEditingController _timeController = TextEditingController();
   String? _selectedTherapist;
-  late Razorpay _razorpay; // Used 'late' to ensure initialization
 
   final List<String> _therapists = [
     "Dr. Smith - Psychologist",
@@ -21,23 +20,6 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
     "Dr. Williams - Therapist",
     "Dr. Davis - Mental Health Coach",
   ];
-
-  @override
-  void initState() {
-    super.initState();
-    _razorpay = Razorpay();
-
-    // Razorpay event listeners
-    _razorpay.on(Razorpay.EVENT_PAYMENT_SUCCESS, _handlePaymentSuccess);
-    _razorpay.on(Razorpay.EVENT_PAYMENT_ERROR, _handlePaymentError);
-    _razorpay.on(Razorpay.EVENT_EXTERNAL_WALLET, _handleExternalWallet);
-  }
-
-  @override
-  void dispose() {
-    _razorpay.clear(); // Cleaning up the Razorpay instance
-    super.dispose();
-  }
 
   void _selectDate() async {
     DateTime? pickedDate = await showDatePicker(
@@ -65,34 +47,7 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
     }
   }
 
-  void _handlePaymentSuccess(PaymentSuccessResponse response) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text("Payment Successful! Appointment Confirmed."),
-        backgroundColor: Colors.green,
-      ),
-    );
-  }
-
-  void _handlePaymentError(PaymentFailureResponse response) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text("Payment Failed! Try Again."),
-        backgroundColor: Colors.red,
-      ),
-    );
-  }
-
-  void _handleExternalWallet(ExternalWalletResponse response) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text("Payment via External Wallet: ${response.walletName}"),
-        backgroundColor: Colors.blue,
-      ),
-    );
-  }
-
-  void _startPayment() {
+  void _navigateToPaymentPage() {
     if (_nameController.text.isEmpty ||
         _dateController.text.isEmpty ||
         _timeController.text.isEmpty ||
@@ -106,24 +61,18 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
       return;
     }
 
-    var options = {
-      "key": "rzp_test_YourKeyHere", // Replace with your Razorpay key
-      "amount": 50000, // Amount in paise (500 INR)
-      "currency": "INR",
-      "name": "Mind Mend",
-      "description": "Therapy Appointment",
-      "prefill": {
-        "contact": "9999999999",
-        "email": "user@example.com",
-      },
-      "theme": {"color": "#FF6F00"}
-    };
-
-    try {
-      _razorpay.open(options);
-    } catch (e) {
-      print("Error: $e");
-    }
+    // Navigate to payment process page
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => PaymentProcessScreen(
+          therapist: _selectedTherapist!,
+          name: _nameController.text,
+          date: _dateController.text,
+          time: _timeController.text, 
+        ),
+      ),
+    );
   }
 
   @override
@@ -216,7 +165,7 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
               SizedBox(height: 24),
               Center(
                 child: ElevatedButton(
-                  onPressed: _startPayment,
+                  onPressed: _navigateToPaymentPage, // Navigate to the payment page
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.deepOrangeAccent,
                     padding: EdgeInsets.symmetric(vertical: 14, horizontal: 32),
