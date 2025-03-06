@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:mindmend/admin/admin%20forgot%20password.dart';
+import 'package:mindmend/admin/admin%20home%20page.dart';
 
 class AdminLoginScreen extends StatefulWidget {
   const AdminLoginScreen({super.key});
@@ -14,8 +15,14 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
   final TextEditingController _passwordController = TextEditingController();
   final FirebaseAuth _auth = FirebaseAuth.instance;
   bool _isLoading = false;
+  bool _isPasswordVisible = false; // Track the password visibility
 
   void _loginAdmin() async {
+    Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => AdminHomePage(),
+        ));
     final email = _emailController.text.trim();
     final password = _passwordController.text.trim();
 
@@ -117,13 +124,12 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
                   ),
                   SizedBox(height: 16),
 
-                  // Password Field
-                  _buildTextField(
+                  // Password Field with Show/Hide Icon
+                  _buildPasswordField(
                     controller: _passwordController,
                     label: "Password",
                     hintText: "Enter your password",
                     icon: Icons.lock,
-                    obscureText: true,
                   ),
                   SizedBox(height: 10),
 
@@ -201,6 +207,55 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
             borderSide: BorderSide.none,
           ),
           contentPadding: EdgeInsets.symmetric(vertical: 15, horizontal: 20),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPasswordField({
+    required TextEditingController controller,
+    required String label,
+    required String hintText,
+    required IconData icon,
+  }) {
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(30),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black26,
+            blurRadius: 10,
+            offset: Offset(0, 4),
+          ),
+        ],
+      ),
+      child: TextField(
+        controller: controller,
+        obscureText: !_isPasswordVisible,
+        decoration: InputDecoration(
+          prefixIcon: Icon(icon, color: Colors.deepOrange),
+          labelText: label,
+          hintText: hintText,
+          hintStyle: TextStyle(color: Colors.grey[600]),
+          labelStyle: TextStyle(color: Colors.deepOrange),
+          filled: true,
+          fillColor: Colors.white,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(30),
+            borderSide: BorderSide.none,
+          ),
+          contentPadding: EdgeInsets.symmetric(vertical: 15, horizontal: 20),
+          suffixIcon: IconButton(
+            icon: Icon(
+              _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
+              color: Colors.deepOrange,
+            ),
+            onPressed: () {
+              setState(() {
+                _isPasswordVisible = !_isPasswordVisible;
+              });
+            },
+          ),
         ),
       ),
     );

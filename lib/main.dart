@@ -4,7 +4,9 @@ import 'package:mindmend/choosenscreen.dart';
 import 'package:mindmend/firebase_options.dart';
 import 'package:mindmend/therapist/therapist%20home%20page.dart';
 import 'package:mindmend/therapist/therapist%20signup.dart';
+import 'package:mindmend/user/user_%20signup_screen.dart';
 import 'package:mindmend/user/user_home.dart';
+import 'package:mindmend/user/user_profile_screen.dart';
 
 
 void main() async {
@@ -26,7 +28,7 @@ class MyApp extends StatelessWidget {
             seedColor: Colors.deepOrange), // Updated theme color
         useMaterial3: true,
       ),
-      home: TherapistSignupScreen(), // Replace with your actual home screen
+      home: ChooseRoleScreen(), // Replace with your actual home screen
     );
   }
 }

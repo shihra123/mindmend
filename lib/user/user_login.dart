@@ -14,6 +14,7 @@ class _UserLoginScreenState extends State<UserLoginScreen> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final FirebaseAuth _auth = FirebaseAuth.instance;
+  bool _isPasswordVisible = false; // To toggle password visibility
 
   void _loginUser() async {
     Navigator.push(
@@ -101,13 +102,12 @@ class _UserLoginScreenState extends State<UserLoginScreen> {
                 ),
                 SizedBox(height: 16),
 
-                // Password Field
-                _buildTextField(
+                // Password Field with Show/Hide Icon
+                _buildPasswordField(
                   controller: _passwordController,
                   label: 'Password',
                   hintText: 'Enter your password',
                   icon: Icons.lock,
-                  obscureText: true,
                 ),
                 SizedBox(height: 30),
 
@@ -193,6 +193,56 @@ class _UserLoginScreenState extends State<UserLoginScreen> {
             borderSide: BorderSide.none,
           ),
           contentPadding: EdgeInsets.symmetric(vertical: 15, horizontal: 20),
+        ),
+      ),
+    );
+  }
+
+  // Password Field with Show/Hide Icon
+  Widget _buildPasswordField({
+    required TextEditingController controller,
+    required String label,
+    required String hintText,
+    required IconData icon,
+  }) {
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(30.0),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black26,
+            blurRadius: 10,
+            offset: Offset(0, 4),
+          ),
+        ],
+      ),
+      child: TextField(
+        controller: controller,
+        obscureText: !_isPasswordVisible, // Toggle visibility based on the _isPasswordVisible value
+        decoration: InputDecoration(
+          prefixIcon: Icon(icon, color: Colors.deepOrange),
+          labelText: label,
+          hintText: hintText,
+          hintStyle: TextStyle(color: Colors.grey[600]),
+          labelStyle: TextStyle(color: Colors.deepOrange),
+          filled: true,
+          fillColor: Colors.white,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(30.0),
+            borderSide: BorderSide.none,
+          ),
+          contentPadding: EdgeInsets.symmetric(vertical: 15, horizontal: 20),
+          suffixIcon: IconButton(
+            icon: Icon(
+              _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
+              color: Colors.deepOrange,
+            ),
+            onPressed: () {
+              setState(() {
+                _isPasswordVisible = !_isPasswordVisible; // Toggle password visibility
+              });
+            },
+          ),
         ),
       ),
     );

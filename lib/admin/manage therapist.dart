@@ -1,23 +1,5 @@
 import 'package:flutter/material.dart';
-
-// Mock Therapist class
-class Therapist {
-  String name;
-  String gender;
-  String email;
-  String qualification;
-  String phone;
-  double fee;
-
-  Therapist({
-    required this.name,
-    required this.gender,
-    required this.email,
-    required this.qualification,
-    required this.phone,
-    required this.fee,
-  });
-}
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class ManageTherapistScreen extends StatefulWidget {
   @override
@@ -25,50 +7,21 @@ class ManageTherapistScreen extends StatefulWidget {
 }
 
 class _ManageTherapistScreenState extends State<ManageTherapistScreen> {
-  // Sample therapist list
-  final List<Therapist> therapists = [
-    Therapist(
-      name: 'John Doe',
-      gender: 'Male',
-      email: 'john.doe@example.com',
-      qualification: 'PhD in Psychology',
-      phone: '123-456-7890',
-      fee: 100.0,
-    ),
-    Therapist(
-      name: 'Jane Smith',
-      gender: 'Female',
-      email: 'jane.smith@example.com',
-      qualification: 'MSc in Clinical Psychology',
-      phone: '098-765-4321',
-      fee: 150.0,
-    ),
-  ];
+  final CollectionReference therapistsCollection =
+      FirebaseFirestore.instance.collection('therapists');
 
-  // Function to delete a therapist
-  void _deleteTherapist(int index) {
-    setState(() {
-      therapists.removeAt(index);
-    });
+  void _deleteTherapist(String id) {
+    therapistsCollection.doc(id).delete();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('Therapist deleted successfully')),
     );
   }
 
-  // Function to update a therapist's details
-  void _updateTherapist(int index) {
+  void _updateTherapist(DocumentSnapshot therapist) {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => UpdateTherapistScreen(
-          therapist: therapists[index],
-          onUpdate: (updatedTherapist) {
-            setState(() {
-              therapists[index] = updatedTherapist;
-            });
-            Navigator.pop(context);
-          },
-        ),
+        builder: (context) => UpdateTherapistScreen(therapist: therapist),
       ),
     );
   }
@@ -80,52 +33,72 @@ class _ManageTherapistScreenState extends State<ManageTherapistScreen> {
         title: Text('Manage Therapists'),
         backgroundColor: Colors.deepOrangeAccent,
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: ListView.builder(
-          itemCount: therapists.length,
-          itemBuilder: (context, index) {
-            final therapist = therapists[index];
-            return Card(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(15),
-              ),
-              elevation: 5,
-              margin: EdgeInsets.symmetric(vertical: 10),
-              child: ListTile(
-                leading: Icon(Icons.person, color: Colors.deepOrangeAccent),
-                title: Text(
-                  therapist.name,
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
+      body: StreamBuilder<QuerySnapshot>(
+        stream: therapistsCollection.snapshots(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Center(child: CircularProgressIndicator());
+          }
+          if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+            return Center(child: Text("No therapists found"));
+          }
+
+          var therapists = snapshot.data!.docs;
+
+          return ListView.builder(
+            itemCount: therapists.length,
+            itemBuilder: (context, index) {
+              var therapist = therapists[index].data() as Map<String, dynamic>;
+              var docId = therapists[index].id;
+              return Card(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(15),
                 ),
-                subtitle: Text('Qualification: ${therapist.qualification}'),
-                trailing: Wrap(
-                  spacing: 12,
-                  children: [
-                    IconButton(
-                      icon: Icon(Icons.edit, color: Colors.deepOrangeAccent),
-                      onPressed: () => _updateTherapist(index),
-                    ),
-                    IconButton(
-                      icon: Icon(Icons.delete, color: Colors.red),
-                      onPressed: () => _deleteTherapist(index),
-                    ),
-                  ],
+                elevation: 5,
+                margin: EdgeInsets.symmetric(vertical: 10),
+                child: ListTile(
+                  leading: Icon(Icons.person, color: Colors.deepOrangeAccent),
+                  title: Text(
+                    therapist['name'] ?? 'Unknown',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
+                  ),
+                  subtitle: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Qualification: ${therapist['qualification'] ?? 'N/A'}'),
+                      Text('Phone: ${therapist['contactNumber'] ?? 'N/A'}'),
+                      Text('Email: ${therapist['email'] ?? 'N/A'}'),
+                      Text('Fee: \$${therapist['fees']?.toString() ?? 'N/A'}'),
+                      Text('Created At: ${therapist['createdAt']?.toDate() ?? 'N/A'}'),
+                    ],
+                  ),
+                  trailing: Wrap(
+                    spacing: 12,
+                    children: [
+                      IconButton(
+                        icon: Icon(Icons.edit, color: Colors.deepOrangeAccent),
+                        onPressed: () => _updateTherapist(therapists[index]),
+                      ),
+                      IconButton(
+                        icon: Icon(Icons.delete, color: Colors.red),
+                        onPressed: () => _deleteTherapist(docId),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-            );
-          },
-        ),
+              );
+            },
+          );
+        },
       ),
     );
   }
 }
 
 class UpdateTherapistScreen extends StatefulWidget {
-  final Therapist therapist;
-  final Function(Therapist) onUpdate;
+  final DocumentSnapshot therapist;
 
-  UpdateTherapistScreen({required this.therapist, required this.onUpdate});
+  UpdateTherapistScreen({required this.therapist});
 
   @override
   _UpdateTherapistScreenState createState() => _UpdateTherapistScreenState();
@@ -133,23 +106,31 @@ class UpdateTherapistScreen extends StatefulWidget {
 
 class _UpdateTherapistScreenState extends State<UpdateTherapistScreen> {
   late TextEditingController _nameController;
-  late TextEditingController _genderController;
-  late TextEditingController _emailController;
   late TextEditingController _qualificationController;
-  late TextEditingController _phoneController;
-  late TextEditingController _feeController;
+  late TextEditingController _emailController;
+  late TextEditingController _contactNumberController;
+  late TextEditingController _feesController;
 
   @override
   void initState() {
     super.initState();
-    _nameController = TextEditingController(text: widget.therapist.name);
-    _genderController = TextEditingController(text: widget.therapist.gender);
-    _emailController = TextEditingController(text: widget.therapist.email);
-    _qualificationController =
-        TextEditingController(text: widget.therapist.qualification);
-    _phoneController = TextEditingController(text: widget.therapist.phone);
-    _feeController =
-        TextEditingController(text: widget.therapist.fee.toString());
+    var data = widget.therapist.data() as Map<String, dynamic>;
+    _nameController = TextEditingController(text: data['name']);
+    _qualificationController = TextEditingController(text: data['qualification']);
+    _emailController = TextEditingController(text: data['email']);
+    _contactNumberController = TextEditingController(text: data['contactNumber']);
+    _feesController = TextEditingController(text: data['fees']);
+  }
+
+  void _updateTherapist() {
+    widget.therapist.reference.update({
+      'name': _nameController.text,
+      'qualification': _qualificationController.text,
+      'email': _emailController.text,
+      'contactNumber': _contactNumberController.text,
+      'fees': double.tryParse(_feesController.text) ?? 0,
+    });
+    Navigator.pop(context);
   }
 
   @override
@@ -169,39 +150,25 @@ class _UpdateTherapistScreenState extends State<UpdateTherapistScreen> {
               decoration: InputDecoration(labelText: 'Name'),
             ),
             TextField(
-              controller: _genderController,
-              decoration: InputDecoration(labelText: 'Gender'),
+              controller: _qualificationController,
+              decoration: InputDecoration(labelText: 'Qualification'),
             ),
             TextField(
               controller: _emailController,
               decoration: InputDecoration(labelText: 'Email'),
             ),
             TextField(
-              controller: _qualificationController,
-              decoration: InputDecoration(labelText: 'Qualification'),
-            ),
-            TextField(
-              controller: _phoneController,
+              controller: _contactNumberController,
               decoration: InputDecoration(labelText: 'Phone'),
             ),
             TextField(
-              controller: _feeController,
+              controller: _feesController,
               decoration: InputDecoration(labelText: 'Fee'),
               keyboardType: TextInputType.number,
             ),
             SizedBox(height: 20),
             ElevatedButton(
-              onPressed: () {
-                final updatedTherapist = Therapist(
-                  name: _nameController.text,
-                  gender: _genderController.text,
-                  email: _emailController.text,
-                  qualification: _qualificationController.text,
-                  phone: _phoneController.text,
-                  fee: double.tryParse(_feeController.text) ?? 0,
-                );
-                widget.onUpdate(updatedTherapist);
-              },
+              onPressed: _updateTherapist,
               child: Text('Update Therapist'),
               style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.deepOrangeAccent),

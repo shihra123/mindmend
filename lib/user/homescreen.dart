@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mindmend/user/user_guided_meditation.dart';
 
 class HomePageScreen extends StatelessWidget {
   @override
@@ -30,25 +31,30 @@ class HomePageScreen extends StatelessWidget {
                 "Enjoy calming meditation sessions.",
                 Icons.self_improvement,
                 () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => GuidedMeditationScreen(),
+                    ));
                   // Navigate to Guided Meditation Screen
                 },
               ),
-              _buildSectionTitle("Upcoming Appointment"),
+              _buildSectionTitle("Emotional Pattern Tracking"),
               _buildFeatureCard(
-                "Next Appointment",
-                "You have an appointment with Dr. Smith on Feb 15 at 10 AM.",
-                Icons.calendar_today,
+                "Track Your Emotions",
+                "Monitor your emotional patterns over time.",
+                Icons.show_chart,
                 () {
-                  // Navigate to Appointment Screen
+                  // Navigate to Emotional Pattern Tracking Screen
                 },
               ),
-              _buildSectionTitle("Chat with AI"),
+              _buildSectionTitle("Setting Goals"),
               _buildFeatureCard(
-                "AI Therapy Chat",
-                "Get instant support from our AI assistant.",
-                Icons.chat_bubble,
+                "Set Personal Goals",
+                "Create goals for mental well-being and track progress.",
+                Icons.assignment,
                 () {
-                  // Navigate to AI Chat Screen
+                  // Navigate to Setting Goals Screen
                 },
               ),
             ],

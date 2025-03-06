@@ -47,16 +47,13 @@ class _TherapistSignupScreenState extends State<TherapistSignupScreen> {
     }
 
     try {
-      // Create user with Firebase Authentication
       final userCredential = await _auth.createUserWithEmailAndPassword(
         email: email,
         password: password,
       );
 
-      // Get user ID
       final uid = userCredential.user?.uid;
 
-      // Add therapist data to Firestore
       await _firestore.collection('therapists').doc(uid).set({
         'name': name,
         'email': email,
@@ -68,7 +65,6 @@ class _TherapistSignupScreenState extends State<TherapistSignupScreen> {
       });
 
       _showSnackBar("Sign up successful!");
-      // Navigate to another screen, e.g., Home
     } on FirebaseAuthException catch (e) {
       _showSnackBar(e.message ?? "An error occurred");
     } catch (e) {
@@ -85,7 +81,7 @@ class _TherapistSignupScreenState extends State<TherapistSignupScreen> {
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: Colors.transparent,
         elevation: 0,
         title: const Text(
           "Create Therapist Account",
@@ -95,14 +91,15 @@ class _TherapistSignupScreenState extends State<TherapistSignupScreen> {
             color: Colors.white,
           ),
         ),
+        centerTitle: true,
       ),
       body: Stack(
         children: [
-          // Background Gradient
+          // Enhanced Background Gradient with Deep Orange & Peach tones
           Container(
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
               gradient: LinearGradient(
-                colors: [Colors.blue.shade800, Colors.lightBlue.shade400],
+                colors: [Color(0xFFFFA07A), Color(0xFFFF6347), Color(0xFFFF4500)],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
@@ -114,6 +111,7 @@ class _TherapistSignupScreenState extends State<TherapistSignupScreen> {
             child: Column(
               children: [
                 const SizedBox(height: 120),
+
                 // Therapist Name Field
                 _buildTextField(
                   controller: _nameController,
@@ -188,17 +186,21 @@ class _TherapistSignupScreenState extends State<TherapistSignupScreen> {
                   style: ElevatedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(
                         vertical: 16.0, horizontal: 80.0),
-                    backgroundColor: Colors.deepOrangeAccent,
+                    backgroundColor: Colors.white,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(30.0),
                     ),
-                    elevation: 5,
+                    elevation: 8,
                     textStyle: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
+                      color: Colors.deepOrangeAccent,
                     ),
                   ),
-                  child: const Text("Sign Up"),
+                  child: const Text(
+                    "Sign Up",
+                    style: TextStyle(color: Colors.deepOrangeAccent),
+                  ),
                 ),
               ],
             ),
@@ -208,7 +210,7 @@ class _TherapistSignupScreenState extends State<TherapistSignupScreen> {
     );
   }
 
-  // Custom TextField Widget with styling
+  // Custom TextField Widget with enhanced styling
   Widget _buildTextField({
     required TextEditingController controller,
     required String label,
@@ -219,6 +221,7 @@ class _TherapistSignupScreenState extends State<TherapistSignupScreen> {
   }) {
     return Container(
       decoration: BoxDecoration(
+        color: Colors.white,
         borderRadius: BorderRadius.circular(30.0),
         boxShadow: const [
           BoxShadow(
@@ -233,7 +236,7 @@ class _TherapistSignupScreenState extends State<TherapistSignupScreen> {
         decoration: InputDecoration(
           labelText: label,
           hintText: hintText,
-          prefixIcon: Icon(icon),
+          prefixIcon: Icon(icon, color: Colors.deepOrangeAccent),
           contentPadding: const EdgeInsets.symmetric(horizontal: 20.0),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(30.0),
@@ -242,5 +245,6 @@ class _TherapistSignupScreenState extends State<TherapistSignupScreen> {
         obscureText: obscureText,
         keyboardType: keyboardType,
       ),
-    );  }
+    );
+  }
 }

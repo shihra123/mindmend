@@ -19,9 +19,15 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
   @override
   void initState() {
     super.initState();
-    uid = _auth.currentUser?.uid ?? ''; // Get the current user's UID
+    uid = _auth.currentUser?.uid ?? '';
+    print('UID: $uid'); // Debugging: Check the UID
+
     if (uid.isNotEmpty) {
       _fetchUserProfile();
+    } else {
+      setState(() {
+        isLoading = false;
+      });
     }
   }
 
@@ -34,17 +40,26 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
           userData = docSnapshot.data() as Map<String, dynamic>?;
           isLoading = false;
         });
-      } else {}
+      } else {
+        setState(() {
+          isLoading = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Profile data not found")),
+        );
+      }
     } catch (e) {
       setState(() {
         isLoading = false;
       });
+      print('Error fetching user profile: $e'); // Log error
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Error loading profile")),
+      );
     }
   }
 
-  // Placeholder for the Edit Profile screen/navigation
   void _editProfile() {
-    // You can navigate to a new screen or show a dialog here
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -53,12 +68,17 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     );
   }
 
-  // Logout functionality
   Future<void> _logout() async {
     try {
       await _auth.signOut();
+      Navigator.of(context).pushReplacementNamed('/login');
     } catch (e) {
-      ("Error logging out");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Error logging out"),
+          backgroundColor: Colors.red,
+        ),
+      );
     }
   }
 
@@ -167,41 +187,32 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
 
               // Edit Profile Button
               ElevatedButton(
-                onPressed: () {
-                  Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => EditProfileScreen(),
-                      ));
-                },
+                onPressed: _editProfile,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor:
-                      Colors.deepOrange, // Edit Profile button color
+                  backgroundColor: Colors.deepOrange,
                   padding: EdgeInsets.symmetric(horizontal: 30, vertical: 12),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  elevation: 4, // Added elevation for a more prominent button
+                  elevation: 4,
                 ),
                 child: Text(
                   'Edit Profile',
                   style: TextStyle(fontSize: 18, color: Colors.white),
                 ),
               ),
-
               SizedBox(height: 20),
 
-              // Logout Button (Same color as Edit Profile Button)
+              // Logout Button
               ElevatedButton(
                 onPressed: _logout,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor:
-                      Colors.deepOrange, // Same as Edit Profile button
+                  backgroundColor: Colors.deepOrange,
                   padding: EdgeInsets.symmetric(horizontal: 30, vertical: 12),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  elevation: 4, // Added elevation for a more prominent button
+                  elevation: 4,
                 ),
                 child: Text(
                   'Logout',

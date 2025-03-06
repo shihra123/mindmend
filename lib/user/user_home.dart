@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:mindmend/user/homescreen.dart';
-import 'package:mindmend/user/userappointmentscreen.dart';
+import 'package:mindmend/user/user_feedback.dart';
 import 'package:mindmend/user/user_messaging.dart';
+import 'package:mindmend/user/user_notification%20screen.dart';
 import 'package:mindmend/user/user_profile_screen.dart';
-import 'package:mindmend/user/userappointmentscreen.dart';
-
-import 'user_notification screen.dart';
 
 class UserHomePage extends StatefulWidget {
   const UserHomePage({super.key});
@@ -17,14 +15,16 @@ class UserHomePage extends StatefulWidget {
 class _UserHomePageState extends State<UserHomePage> {
   int _selectedIndex = 0;
 
+  // List of pages corresponding to each tab
   final List<Widget> _pages = [
-    HomePageScreen(),
-    BookAppointmentScreen(),
-    NotificationsScreen(),
-    UserMessagingScreen(), // Messaging Page
-    UserProfileScreen(),
+    HomePageScreen(),           // Home Page
+    UserProfileScreen(),        // User Profile
+    NotificationsScreen(),      // Notifications
+    UserFeedbackScreen(),       // Feedback
+    UserMessagingScreen(),      // Messaging
   ];
 
+  // Method to handle the tab selection
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
@@ -34,13 +34,13 @@ class _UserHomePageState extends State<UserHomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: _pages[_selectedIndex],
+      body: _pages[_selectedIndex],  // Show selected page
 
-      // Bottom Navigation Bar with Messaging
+      // Bottom Navigation Bar
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _selectedIndex,
         onTap: _onItemTapped,
-        selectedItemColor: Colors.white,
+        selectedItemColor: Colors.deepOrangeAccent,
         unselectedItemColor: Colors.white70,
         backgroundColor: Colors.deepOrangeAccent,
         type: BottomNavigationBarType.fixed,
@@ -51,20 +51,20 @@ class _UserHomePageState extends State<UserHomePage> {
             label: "Home",
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.calendar_today),
-            label: "Appointments",
+            icon: Icon(Icons.person),
+            label: "Profile",
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.notifications_active),
+            icon: Icon(Icons.notifications),
             label: "Notifications",
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.chat),
-            label: "Messaging", // Chat Feature
+            icon: Icon(Icons.feedback),
+            label: "Feedback",
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: "Profile",
+            icon: Icon(Icons.chat),
+            label: "Messaging",
           ),
         ],
       ),
