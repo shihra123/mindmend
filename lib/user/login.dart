@@ -1,55 +1,116 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:mindmend/admin/admin%20home%20page.dart';
+import 'package:mindmend/therapist/therapist%20home%20page.dart';
 import 'package:mindmend/user/user_forgot_password.dart';
-import 'package:mindmend/user/user_home.dart';
+import 'package:mindmend/user/user_home.dart'; // User Home page
 
-class UserLoginScreen extends StatefulWidget {
-  const UserLoginScreen({super.key});
+
+class LoginScreen extends StatefulWidget {
+  const LoginScreen({super.key});
 
   @override
-  State<UserLoginScreen> createState() => _UserLoginScreenState();
+  State<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _UserLoginScreenState extends State<UserLoginScreen> {
+class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final FirebaseAuth _auth = FirebaseAuth.instance;
   bool _isPasswordVisible = false; // To toggle password visibility
+void _loginUser() async {
+  final email = _emailController.text.trim();
+  final password = _passwordController.text.trim();
 
-  void _loginUser() async {
-    Navigator.push(
+  if (email.isEmpty || password.isEmpty) {
+    _showSnackBar("Please fill all fields");
+    return;
+  }
+
+  try {
+    // Check if admin credentials are used
+    if (email == "shihra@gmail.com" && password == "shihra123") {
+      // Admin credentials match, navigate to admin home
+      Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-          builder: (context) => UserHomePage(),
-        ));
-    final email = _emailController.text.trim();
-    final password = _passwordController.text.trim();
-
-    if (email.isEmpty || password.isEmpty) {
-      _showSnackBar("Please fill all fields");
+          builder: (context) => AdminHomePage(), // Admin Home screen
+        ),
+      );
       return;
     }
 
-    try {
-      await _auth.signInWithEmailAndPassword(
-        email: email,
-        password: password,
-      );
+    // Sign in with Firebase Authentication for users and therapists
+    UserCredential userCredential = await _auth.signInWithEmailAndPassword(
+      email: email,
+      password: password,
+    );
 
-      _showSnackBar("Login successful!");
-      // Navigate to another screen, e.g., HomeScreen
-    } on FirebaseAuthException catch (e) {
-      if (e.code == 'user-not-found') {
-        _showSnackBar("No user found for this email.");
-      } else if (e.code == 'wrong-password') {
-        _showSnackBar("Incorrect password.");
+    // Fetch user role (You would typically store and fetch roles from Firestore here)
+    String userRole = await _fetchUserRole(userCredential.user!.uid);
+
+    // Navigate based on the role
+    if (userRole == 'user') {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) => UserHomePage(), // User Home screen
+        ),
+      );
+    } else if (userRole == 'therapist') {
+      // Check if therapist is approved
+      bool isApproved = await _checkTherapistApproval(userCredential.user!.uid);
+
+      if (isApproved) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => TherapistHomePage(), // Therapist Home screen
+          ),
+        );
       } else {
-        _showSnackBar(e.message ?? "An error occurred");
+        _showSnackBar("Your account is not approved yet. Please contact support.");
       }
-    } catch (e) {
-      _showSnackBar("An unexpected error occurred");
+    } else {
+      _showSnackBar("Unknown role. Please contact support.");
     }
+  } on FirebaseAuthException catch (e) {
+    if (e.code == 'user-not-found') {
+      _showSnackBar("No user found for this email.");
+    } else if (e.code == 'wrong-password') {
+      _showSnackBar("Incorrect password.");
+    } else {
+      _showSnackBar(e.message ?? "An error occurred");
+    }
+  } catch (e) {
+    _showSnackBar("An unexpected error occurred");
   }
+}
+
+// Simulating fetching role from Firestore (this should be implemented in your app)
+Future<String> _fetchUserRole(String userId) async {
+  // Fetch the role from Firestore or Firebase Database here
+  // For now, we'll return a fixed value based on your example
+  DocumentSnapshot userDoc = await FirebaseFirestore.instance.collection('users').doc(userId).get();
+  
+  if (userDoc.exists) {
+    return userDoc['role']; // Assuming role is stored as 'role' in Firestore
+  } else {
+    return "user"; // Default role if not found
+  }
+}
+
+// Check if therapist is approved (in Firestore therapists collection)
+Future<bool> _checkTherapistApproval(String therapistId) async {
+  DocumentSnapshot therapistDoc = await FirebaseFirestore.instance.collection('therapists').doc(therapistId).get();
+
+  if (therapistDoc.exists) {
+    bool isApproved = therapistDoc['approved'] ?? false;
+    return isApproved; // Return approval status
+  }
+  return false; // If therapist document doesn't exist, return false
+}
 
   void _showSnackBar(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
@@ -65,7 +126,7 @@ class _UserLoginScreenState extends State<UserLoginScreen> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         title: Text(
-          "User Login",
+          "Login",
           style: TextStyle(
             fontSize: 28,
             fontWeight: FontWeight.bold,

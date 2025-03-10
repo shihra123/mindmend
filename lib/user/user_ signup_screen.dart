@@ -120,6 +120,7 @@ class _UserSignupScreenState extends State<UserSignupScreen> {
         'gender': gender,
         'uid': uid,
         'profileImage': profileImageUrl,
+        'role': 'user',
         'createdAt': FieldValue.serverTimestamp(),
       });
 

@@ -61,6 +61,8 @@ class _TherapistSignupScreenState extends State<TherapistSignupScreen> {
         'contactNumber': contactNumber,
         'fees': fees,
         'uid': uid,
+        'approved': false,
+        'role': 'therapist',
         'createdAt': FieldValue.serverTimestamp(),
       });
 
