@@ -1,37 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class AppointmentDetailsScreen extends StatelessWidget {
-  // Sample data for appointments (replace with real data later)
-  final List<Map<String, String>> appointments = [
-    {
-      'user': 'John Doe',
-      'therapist': 'Dr. Sarah Smith',
-      'date': '2025-02-10',
-      'time': '10:00 AM',
-      'status': 'Confirmed',
-    },
-    {
-      'user': 'Jane Smith',
-      'therapist': 'Dr. James Miller',
-      'date': '2025-02-12',
-      'time': '02:00 PM',
-      'status': 'Pending',
-    },
-    {
-      'user': 'Michael Johnson',
-      'therapist': 'Dr. Linda Taylor',
-      'date': '2025-02-14',
-      'time': '11:30 AM',
-      'status': 'Completed',
-    },
-    {
-      'user': 'Emily Davis',
-      'therapist': 'Dr. Robert Green',
-      'date': '2025-02-15',
-      'time': '03:00 PM',
-      'status': 'Cancelled',
-    },
-  ];
+  // Function to send notification to the therapist
+  void sendNotification(String therapistId, String message) {
+    FirebaseFirestore.instance.collection('notifications').add({
+      'therapistId': therapistId,
+      'message': message,
+      'timestamp': FieldValue.serverTimestamp(),
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -40,79 +18,89 @@ class AppointmentDetailsScreen extends StatelessWidget {
         title: Text("Appointment Details"),
         backgroundColor: Colors.deepOrangeAccent,
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: ListView.builder(
-          itemCount: appointments.length,
-          itemBuilder: (context, index) {
-            return Card(
-              margin: EdgeInsets.symmetric(vertical: 8.0),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(15),
-              ),
-              elevation: 5,
-              child: ListTile(
-                contentPadding: EdgeInsets.all(16.0),
-                title: Text(
-                  appointments[index]['user']!,
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.deepOrangeAccent,
+      body: StreamBuilder(
+        stream: FirebaseFirestore.instance.collection('appointments').snapshots(),
+        builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Center(child: CircularProgressIndicator());
+          }
+
+          if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+            return Center(child: Text("No appointments available"));
+          }
+
+          var appointments = snapshot.data!.docs;
+
+          return ListView.builder(
+            itemCount: appointments.length,
+            itemBuilder: (context, index) {
+              var appointment = appointments[index];
+              return Card(
+                margin: EdgeInsets.symmetric(vertical: 8.0, horizontal: 10.0),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(15),
+                ),
+                elevation: 5,
+                child: ListTile(
+                  contentPadding: EdgeInsets.all(16.0),
+                  title: Text(
+                    appointment['user'] ?? 'Unknown User',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.deepOrangeAccent,
+                    ),
+                  ),
+                  subtitle: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      SizedBox(height: 8),
+                      Text(
+                        'Therapist: ${appointment['therapist']}',
+                        style: TextStyle(fontSize: 14, color: Colors.black54),
+                      ),
+                      SizedBox(height: 8),
+                      Text(
+                        'Date: ${appointment['date']}',
+                        style: TextStyle(fontSize: 14, color: Colors.black54),
+                      ),
+                      SizedBox(height: 8),
+                      Text(
+                        'Time: ${appointment['time']}',
+                        style: TextStyle(fontSize: 14, color: Colors.black54),
+                      ),
+                      SizedBox(height: 8),
+                      Text(
+                        'Status: ${appointment['status']}',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: appointment['status'] == 'Cancelled'
+                              ? Colors.red
+                              : appointment['status'] == 'Completed'
+                                  ? Colors.green
+                                  : Colors.orange,
+                        ),
+                      ),
+                    ],
+                  ),
+                  trailing: IconButton(
+                    icon: Icon(Icons.notifications, color: Colors.deepOrangeAccent),
+                    onPressed: () {
+                      sendNotification(
+                        appointment['therapistId'],
+                        "New update on appointment with ${appointment['user']}",
+                      );
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text("Notification sent to therapist")),
+                      );
+                    },
                   ),
                 ),
-                subtitle: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    SizedBox(height: 8),
-                    Text(
-                      'Therapist: ${appointments[index]['therapist']}',
-                      style: TextStyle(fontSize: 14, color: Colors.black54),
-                    ),
-                    SizedBox(height: 8),
-                    Text(
-                      'Date: ${appointments[index]['date']}',
-                      style: TextStyle(fontSize: 14, color: Colors.black54),
-                    ),
-                    SizedBox(height: 8),
-                    Text(
-                      'Time: ${appointments[index]['time']}',
-                      style: TextStyle(fontSize: 14, color: Colors.black54),
-                    ),
-                    SizedBox(height: 8),
-                    Text(
-                      'Status: ${appointments[index]['status']}',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: appointments[index]['status'] == 'Cancelled'
-                            ? Colors.red
-                            : appointments[index]['status'] == 'Completed'
-                                ? Colors.green
-                                : Colors.orange,
-                      ),
-                    ),
-                  ],
-                ),
-                trailing: Icon(
-                  Icons.arrow_forward_ios,
-                  size: 18,
-                  color: Colors.deepOrangeAccent,
-                ),
-                onTap: () {
-                  // Optionally, handle appointment details or more actions
-                },
-              ),
-            );
-          },
-        ),
+              );
+            },
+          );
+        },
       ),
     );
   }
-}
-
-void main() {
-  runApp(MaterialApp(
-    debugShowCheckedModeBanner: false,
-    home: AppointmentDetailsScreen(),
-  ));
 }
