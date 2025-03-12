@@ -26,10 +26,10 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(
-            seedColor: Colors.deepOrange), // Updated theme color
+            seedColor: Colors.deepOrange), 
         useMaterial3: true,
       ),
-      home: SplashScreen(), // Replace with your actual home screen
+      home: WelcomeScreen(), 
     );
   }
 }

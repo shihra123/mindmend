@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:mindmend/user/homescreen.dart';
-import 'package:mindmend/user/user_feedback.dart';
 import 'package:mindmend/user/user_messaging.dart';
 import 'package:mindmend/user/user_notification%20screen.dart';
 import 'package:mindmend/user/user_profile_screen.dart';
+import 'package:mindmend/user/userappointmentscreen.dart'; // Importing My Appointments Screen
 
 class UserHomePage extends StatefulWidget {
   const UserHomePage({super.key});
@@ -17,11 +17,11 @@ class _UserHomePageState extends State<UserHomePage> {
 
   // List of pages corresponding to each tab
   final List<Widget> _pages = [
-    HomePageScreen(),           // Home Page
-    UserProfileScreen(),        // User Profile
-    NotificationsScreen(),      // Notifications
-    UserFeedbackScreen(),       // Feedback
-    UserMessagingScreen(),      // Messaging
+    HomePageScreen(), // Home Page
+    UserProfileScreen(), // User Profile
+    NotificationsScreen(), // Notifications
+    UserAppointmentsScreen(), // My Appointments
+    UserMessagingScreen(), // Messaging
   ];
 
   // Method to handle the tab selection
@@ -34,7 +34,7 @@ class _UserHomePageState extends State<UserHomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: _pages[_selectedIndex],  // Show selected page
+      body: _pages[_selectedIndex], // Show selected page
 
       // Bottom Navigation Bar
       bottomNavigationBar: BottomNavigationBar(
@@ -59,8 +59,8 @@ class _UserHomePageState extends State<UserHomePage> {
             label: "Notifications",
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.feedback),
-            label: "Feedback",
+            icon: Icon(Icons.calendar_today),
+            label: "My Appointments",
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.chat),
