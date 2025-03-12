@@ -26,6 +26,20 @@ class _ManageTherapistScreenState extends State<ManageTherapistScreen> {
     );
   }
 
+  void _approveTherapist(String id) {
+    therapistsCollection.doc(id).update({'approved': true});
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Therapist approved successfully')),
+    );
+  }
+
+  void _rejectTherapist(String id) {
+    therapistsCollection.doc(id).update({'approved': false});
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Therapist rejected')),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -50,6 +64,8 @@ class _ManageTherapistScreenState extends State<ManageTherapistScreen> {
             itemBuilder: (context, index) {
               var therapist = therapists[index].data() as Map<String, dynamic>;
               var docId = therapists[index].id;
+              bool isApproved = therapist['approved'] ?? false;
+
               return Card(
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(15),
@@ -57,7 +73,10 @@ class _ManageTherapistScreenState extends State<ManageTherapistScreen> {
                 elevation: 5,
                 margin: EdgeInsets.symmetric(vertical: 10),
                 child: ListTile(
-                  leading: Icon(Icons.person, color: Colors.deepOrangeAccent),
+                  leading: Icon(
+                    Icons.person,
+                    color: isApproved ? Colors.green : Colors.deepOrangeAccent,
+                  ),
                   title: Text(
                     therapist['name'] ?? 'Unknown',
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
@@ -70,6 +89,7 @@ class _ManageTherapistScreenState extends State<ManageTherapistScreen> {
                       Text('Email: ${therapist['email'] ?? 'N/A'}'),
                       Text('Fee: \$${therapist['fees']?.toString() ?? 'N/A'}'),
                       Text('Created At: ${therapist['createdAt']?.toDate() ?? 'N/A'}'),
+                      Text('Status: ${isApproved ? 'Approved' : 'Pending'}'),
                     ],
                   ),
                   trailing: Wrap(
@@ -82,6 +102,26 @@ class _ManageTherapistScreenState extends State<ManageTherapistScreen> {
                       IconButton(
                         icon: Icon(Icons.delete, color: Colors.red),
                         onPressed: () => _deleteTherapist(docId),
+                      ),
+                      PopupMenuButton<String>(
+                        onSelected: (value) {
+                          if (value == 'approve') {
+                            _approveTherapist(docId);
+                          } else if (value == 'reject') {
+                            _rejectTherapist(docId);
+                          }
+                        },
+                        itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+                          PopupMenuItem<String>(
+                            value: 'approve',
+                            child: Text('Approve'),
+                          ),
+                          PopupMenuItem<String>(
+                            value: 'reject',
+                            child: Text('Reject'),
+                          ),
+                        ],
+                        icon: Icon(Icons.more_vert, color: Colors.deepOrangeAccent),
                       ),
                     ],
                   ),
@@ -178,11 +218,4 @@ class _UpdateTherapistScreenState extends State<UpdateTherapistScreen> {
       ),
     );
   }
-}
-
-void main() {
-  runApp(MaterialApp(
-    debugShowCheckedModeBanner: false,
-    home: ManageTherapistScreen(),
-  ));
 }

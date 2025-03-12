@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 import 'package:mindmend/choosenscreen.dart';
-import 'package:mindmend/user/user_home.dart'; // Replace with the relevant screen in your app
-
+import 'package:mindmend/user/user_home.dart';
 class SplashScreen extends StatefulWidget {
   @override
   _SplashScreenState createState() => _SplashScreenState();
