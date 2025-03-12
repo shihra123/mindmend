@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:mindmend/user/user_guided_meditation.dart';
-
 class HomePageScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -36,7 +35,6 @@ class HomePageScreen extends StatelessWidget {
                     MaterialPageRoute(
                       builder: (context) => GuidedMeditationScreen(),
                     ));
-                  // Navigate to Guided Meditation Screen
                 },
               ),
               _buildSectionTitle("Emotional Pattern Tracking"),
