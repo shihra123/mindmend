@@ -1,5 +1,6 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:mindmend/admin/admin%20home%20page.dart';
 import 'package:mindmend/choosenscreen.dart';
 import 'package:mindmend/firebase_options.dart';
 import 'package:mindmend/splash.dart';
@@ -28,7 +29,7 @@ class MyApp extends StatelessWidget {
             seedColor: Colors.deepOrange), // Updated theme color
         useMaterial3: true,
       ),
-      home: WelcomeScreen(), // Replace with your actual home screen
+      home: SplashScreen(), // Replace with your actual home screen
     );
   }
 }

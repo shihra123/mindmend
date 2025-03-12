@@ -2,12 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 import 'package:mindmend/choosenscreen.dart';
 import 'package:mindmend/user/user_home.dart';
+
 class SplashScreen extends StatefulWidget {
   @override
   _SplashScreenState createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMixin {
+class _SplashScreenState extends State<SplashScreen>
+    with TickerProviderStateMixin {
   late AnimationController _controller;
 
   @override
@@ -30,7 +32,7 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
       backgroundColor: Colors.white, // Adjust the background color if necessary
       body: Center(
         child: Lottie.asset(
-          'asset/Animation - 1741588462616.json', // Replace this with your animation file
+          'assets/Animation - 1741588462616.json', // Replace this with your animation file
           controller: _controller,
           onLoaded: (composition) {
             // Set up the animation duration and play the animation
@@ -40,7 +42,9 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
                 // Navigate to the home screen once animation completes
                 Navigator.pushReplacement(
                   context,
-                  MaterialPageRoute(builder: (context) => WelcomeScreen()), // Replace with your desired screen
+                  MaterialPageRoute(
+                      builder: (context) =>
+                          WelcomeScreen()), // Replace with your desired screen
                 );
               });
           },
