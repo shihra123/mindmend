@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:mindmend/user/moodtracking.dart';
 import 'package:mindmend/user/setgoalscreen.dart';
 import 'package:mindmend/user/user_guided_meditation.dart';  
 
@@ -77,61 +78,75 @@ class _HomePageScreenState extends State<HomePageScreen> {
     });
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-        appBar: AppBar(
-          title: Text("Mind Mend"),
-          backgroundColor: Colors.deepOrangeAccent,
+ @override
+Widget build(BuildContext context) {
+  return Scaffold(
+    appBar: AppBar(
+      title: Text("Mind Mend"),
+      backgroundColor: Colors.deepOrangeAccent,
+    ),
+    body: Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [Colors.blue.shade800, Colors.lightBlue.shade400],
+          begin: Alignment.topLeft,
+          end: Alignment.topRight,
         ),
-        body: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [Colors.blue.shade800, Colors.lightBlue.shade400],
-              begin: Alignment.topLeft,
-              end: Alignment.topRight,
+      ),
+      child: SingleChildScrollView(
+        padding: EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildSectionTitle("Daily Health & Mood Refreshment Quote"),
+            _buildQuoteCard(dailyQuote),
+            _buildSectionTitle("Guided Meditation"),
+            _buildFeatureCard(
+              "Relax Your Mind",
+              "Meditations recommended by your therapist.",
+              Icons.self_improvement,
+              () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => GuidedMeditationScreen(),
+                  ),
+                );
+              },
             ),
-          ),
-          child: SingleChildScrollView(
-            padding: EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildSectionTitle("Daily Health & Mood Refreshment Quote"),
-                _buildQuoteCard(dailyQuote),
-                _buildSectionTitle("Guided Meditation"),
-                _buildFeatureCard(
-                  "Relax Your Mind",
-                  "Meditations recommended by your therapist.",
-                  Icons.self_improvement,
-                  () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => GuidedMeditationScreen(),
-                      ),
-                    );
-                  },
-                ),
-                _buildSectionTitle("Setting Goals"),
-                _buildFeatureCard(
-                  "Manage Your Mind",
-                  "Guided exercises for better mental well-being.",
-                  Icons.lightbulb,
-                  () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => TodoListScreen(),
-                      ),
-                    );
-                  },
-                ),
-              ],
+            _buildSectionTitle("Setting Goals"),
+            _buildFeatureCard(
+              "Manage Your Mind",
+              "Guided exercises for better mental well-being.",
+              Icons.lightbulb,
+              () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => TodoListScreen(),
+                  ),
+                );
+              },
             ),
+          ],
+        ),
+      ),
+    ),
+    floatingActionButton: FloatingActionButton(
+      onPressed: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => MoodTrackingScreen(),
           ),
-        ));
-  }
+        );
+      },
+      backgroundColor: Colors.deepOrangeAccent,
+      child: Icon(Icons.insert_emoticon),
+    ),
+  );
+}
+
 
   Widget _buildSectionTitle(String title) {
     return Padding(

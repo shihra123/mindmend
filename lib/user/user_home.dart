@@ -19,7 +19,7 @@ class _UserHomePageState extends State<UserHomePage> {
   final List<Widget> _pages = [
     HomePageScreen(), // Home Page
     UserProfileScreen(), // User Profile
-    NotificationsScreen(), // Notifications
+    NotificationsScreen(userId: '',), // Notifications
     UserAppointmentsScreen(), // My Appointments
     UserMessagingScreen(), // Messaging
   ];
