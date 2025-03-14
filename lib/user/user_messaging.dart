@@ -1,42 +1,38 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class Therapist {
+  final String id;
   final String name;
-  bool isBooked;
+  final bool isBooked;
 
-  Therapist({required this.name, this.isBooked = false});
+  Therapist({required this.id, required this.name, required this.isBooked});
 
-  // Store messages for each therapist
-  List<String> messages = [];
+  factory Therapist.fromFirestore(DocumentSnapshot doc) {
+    final data = doc.data() as Map<String, dynamic>;
+    return Therapist(
+      id: doc.id,
+      name: data['name'],
+      isBooked: data['isBooked'] ?? false,
+    );
+  }
 }
 
 class UserMessagingScreen extends StatefulWidget {
-  const UserMessagingScreen({super.key});
-
   @override
   State<UserMessagingScreen> createState() => _UserMessagingScreenState();
 }
 
 class _UserMessagingScreenState extends State<UserMessagingScreen> {
-  // List of therapists
-  List<Therapist> therapists = [
-    Therapist(name: "Dr. Smith - Psychologist"),
-    Therapist(name: "Dr. Johnson - Psychiatrist"),
-    Therapist(name: "Dr. Brown - Counselor"),
-    Therapist(name: "Dr. Williams - Therapist"),
-    Therapist(name: "Dr. Davis - Mental Health Coach"),
-  ];
-
-  // Controller for the message input
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final TextEditingController _messageController = TextEditingController();
 
-  // Function to open the dialog and send message
   void _openMessageDialog(Therapist therapist) {
     showDialog(
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Text("Message ${therapist.name}"),
+          title: Text("Chat with ${therapist.name}"),
           content: TextField(
             controller: _messageController,
             decoration: InputDecoration(
@@ -46,11 +42,15 @@ class _UserMessagingScreenState extends State<UserMessagingScreen> {
           ),
           actions: [
             TextButton(
-              onPressed: () {
-                // Send message and close dialog
+              onPressed: () async {
                 if (_messageController.text.isNotEmpty) {
-                  setState(() {
-                    therapist.messages.add(_messageController.text.trim());
+                  await _firestore
+                      .collection("therapists")
+                      .doc(therapist.id)
+                      .collection("messages")
+                      .add({
+                    'text': _messageController.text.trim(),
+                    'timestamp': FieldValue.serverTimestamp(),
                   });
                 }
                 _messageController.clear();
@@ -60,13 +60,71 @@ class _UserMessagingScreenState extends State<UserMessagingScreen> {
             ),
             TextButton(
               onPressed: () {
-                // Close dialog without sending
                 _messageController.clear();
                 Navigator.pop(context);
               },
               child: Text("Cancel"),
             ),
           ],
+        );
+      },
+    );
+  }
+
+  void _showChatHistory(Therapist therapist) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return StreamBuilder<QuerySnapshot>(
+          stream: _firestore
+              .collection("therapists")
+              .doc(therapist.id)
+              .collection("messages")
+              .orderBy("timestamp", descending: true)
+              .snapshots(),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return AlertDialog(
+                title: Text("Messages with ${therapist.name}"),
+                content: Center(child: CircularProgressIndicator()),
+              );
+            }
+
+            if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+              return AlertDialog(
+                title: Text("Messages with ${therapist.name}"),
+                content: Text("No messages yet."),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: Text("Close"),
+                  ),
+                ],
+              );
+            }
+
+            return AlertDialog(
+              title: Text("Messages with ${therapist.name}"),
+              content: Container(
+                width: double.maxFinite,
+                child: ListView(
+                  shrinkWrap: true,
+                  children: snapshot.data!.docs.map((doc) {
+                    return ListTile(
+                      title: Text(doc['text']),
+                      subtitle: Text(doc['timestamp']?.toDate().toString() ?? ""),
+                    );
+                  }).toList(),
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: Text("Close"),
+                ),
+              ],
+            );
+          },
         );
       },
     );
@@ -79,49 +137,36 @@ class _UserMessagingScreenState extends State<UserMessagingScreen> {
         title: Text("Chat with Therapist"),
         backgroundColor: Colors.lightBlue,
       ),
-      body: ListView.builder(
-        padding: const EdgeInsets.all(10),
-        itemCount: therapists.length,
-        itemBuilder: (context, index) {
-          final therapist = therapists[index];
+      body: StreamBuilder<QuerySnapshot>(
+        stream: _firestore.collection("therapists").snapshots(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Center(child: CircularProgressIndicator());
+          }
 
-          return ListTile(
-            title: Text(therapist.name),
-            trailing: IconButton(
-              icon: Icon(Icons.message),
-              onPressed: therapist.isBooked
-                  ? () => _openMessageDialog(therapist)
-                  : null, // Only allow messaging if the appointment is booked
-            ),
-            onTap: therapist.isBooked
-                ? () {
-                    // Optionally, show all previous messages when tapped
-                    showDialog(
-                      context: context,
-                      builder: (context) {
-                        return AlertDialog(
-                          title: Text("Messages with ${therapist.name}"),
-                          content: ListView.builder(
-                            itemCount: therapist.messages.length,
-                            itemBuilder: (context, index) {
-                              return ListTile(
-                                title: Text(therapist.messages[index]),
-                              );
-                            },
-                          ),
-                          actions: [
-                            TextButton(
-                              onPressed: () {
-                                Navigator.pop(context);
-                              },
-                              child: Text("Close"),
-                            ),
-                          ],
-                        );
-                      },
-                    );
-                  }
-                : null, // Show message history only if appointment is booked
+          if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+            return Center(child: Text("No therapists available."));
+          }
+
+          List<Therapist> therapists = snapshot.data!.docs
+              .map((doc) => Therapist.fromFirestore(doc))
+              .toList();
+
+          return ListView.builder(
+            padding: const EdgeInsets.all(10),
+            itemCount: therapists.length,
+            itemBuilder: (context, index) {
+              final therapist = therapists[index];
+
+              return ListTile(
+                title: Text(therapist.name),
+                trailing: IconButton(
+                  icon: Icon(Icons.message, color: therapist.isBooked ? Colors.blue : Colors.grey),
+                  onPressed: therapist.isBooked ? () => _openMessageDialog(therapist) : null,
+                ),
+                onTap: therapist.isBooked ? () => _showChatHistory(therapist) : null,
+              );
+            },
           );
         },
       ),
