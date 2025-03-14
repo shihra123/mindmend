@@ -29,7 +29,7 @@ class MyApp extends StatelessWidget {
             seedColor: Colors.deepOrange), 
         useMaterial3: true,
       ),
-      home: WelcomeScreen(), 
+      home: SplashScreen(), 
     );
   }
 }

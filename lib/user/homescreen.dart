@@ -83,12 +83,12 @@ Widget build(BuildContext context) {
   return Scaffold(
     appBar: AppBar(
       title: Text("Mind Mend"),
-      backgroundColor: Colors.deepOrangeAccent,
+      backgroundColor: Colors.black,
     ),
     body: Container(
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [Colors.blue.shade800, Colors.lightBlue.shade400],
+          colors: [Colors.grey, Colors.grey],
           begin: Alignment.topLeft,
           end: Alignment.topRight,
         ),
@@ -141,7 +141,7 @@ Widget build(BuildContext context) {
           ),
         );
       },
-      backgroundColor: Colors.deepOrangeAccent,
+      backgroundColor: Colors.black,
       child: Icon(Icons.insert_emoticon),
     ),
   );
@@ -154,14 +154,14 @@ Widget build(BuildContext context) {
       child: Text(
         title,
         style: TextStyle(
-            fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
+            fontSize: 20, fontWeight: FontWeight.bold, color: Colors.black),
       ),
     );
   }
 
   Widget _buildQuoteCard(String quote) {
     return Card(
-      color: Colors.orangeAccent,
+      color: Colors.black,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Padding(
         padding: EdgeInsets.all(16),
@@ -184,10 +184,10 @@ Widget build(BuildContext context) {
       color: Colors.white,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: ListTile(
-        leading: Icon(icon, color: Colors.deepOrangeAccent),
+        leading: Icon(icon, color: Colors.black),
         title: Text(title, style: TextStyle(fontWeight: FontWeight.bold)),
         subtitle: Text(description),
-        trailing: Icon(Icons.arrow_forward, color: Colors.deepOrangeAccent),
+        trailing: Icon(Icons.arrow_forward, color: Colors.black),
         onTap: onTap,
       ),
     );

@@ -12,8 +12,6 @@ class NotificationsScreen extends StatefulWidget {
 }
 
 class _NotificationsScreenState extends State<NotificationsScreen> {
-
-  // Firestore reference for notifications
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   // Stream to listen for real-time updates of the notifications collection
@@ -55,12 +53,23 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         child: StreamBuilder<QuerySnapshot>(
           stream: _notificationsStream(),
           builder: (context, snapshot) {
+            // Check if there is no data
             if (!snapshot.hasData) {
+              print("No data fetched yet");
               return Center(child: CircularProgressIndicator());
             }
 
-            final notifications = snapshot.data!.docs;
+            // Check if there is an error
+            if (snapshot.hasError) {
+              print("Error: ${snapshot.error}");
+              return Center(child: Text("Something went wrong"));
+            }
 
+            // Print the number of notifications fetched
+            final notifications = snapshot.data!.docs;
+            print("Notifications fetched: ${notifications.length}");
+
+            // If no notifications exist
             if (notifications.isEmpty) {
               return Center(
                 child: Text(
@@ -70,6 +79,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
               );
             }
 
+            // If notifications exist, display them in a ListView
             return ListView.builder(
               padding: EdgeInsets.all(12),
               itemCount: notifications.length,
@@ -77,9 +87,12 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                 final notification = notifications[index];
                 final isRead = notification['isRead'] ?? false;
                 final notificationId = notification.id;
-                final title = notification['title'];
-                final message = notification['message'];
-                final time = (notification['time'] as Timestamp).toDate();
+                final title = notification['title'] ?? 'No title';
+                final message = notification['message'] ?? 'No message';
+                final time = (notification['time'] as Timestamp?)?.toDate() ?? DateTime.now();
+
+                // Print notification details for debugging
+                print("Notification $index - ID: $notificationId, Title: $title, Time: $time, Is Read: $isRead");
 
                 return Card(
                   color: isRead ? Colors.white70 : Colors.white,

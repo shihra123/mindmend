@@ -20,7 +20,7 @@ class _UserHomePageState extends State<UserHomePage> {
     HomePageScreen(), // Home Page
     UserProfileScreen(), // User Profile
     NotificationsScreen(userId: '',), // Notifications
-    UserAppointmentsScreen(), // My Appointments
+    BookAppointmentScreen(), // My Appointments
     UserMessagingScreen(), // Messaging
   ];
 
@@ -40,9 +40,9 @@ class _UserHomePageState extends State<UserHomePage> {
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _selectedIndex,
         onTap: _onItemTapped,
-        selectedItemColor: Colors.deepOrangeAccent,
+        selectedItemColor: Colors.grey,
         unselectedItemColor: Colors.white70,
-        backgroundColor: Colors.deepOrangeAccent,
+        backgroundColor: Colors.black,
         type: BottomNavigationBarType.fixed,
         elevation: 10,
         items: const [
