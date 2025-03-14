@@ -6,7 +6,6 @@ import 'package:mindmend/therapist/therapist%20home%20page.dart';
 import 'package:mindmend/user/user_forgot_password.dart';
 import 'package:mindmend/user/user_home.dart'; // User Home page
 
-
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
 
@@ -18,99 +17,116 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final FirebaseAuth _auth = FirebaseAuth.instance;
-  bool _isPasswordVisible = false; // To toggle password visibility
-void _loginUser() async {
-  final email = _emailController.text.trim();
-  final password = _passwordController.text.trim();
+  bool _isPasswordVisible = false;
+  Future<String> _fetchUserRole(String userId) async {
+    try {
+      DocumentSnapshot userDoc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(userId)
+          .get();
 
-  if (email.isEmpty || password.isEmpty) {
-    _showSnackBar("Please fill all fields");
-    return;
+      if (userDoc.exists) {
+        return userDoc['role'] ?? 'user';
+      }
+      DocumentSnapshot therapistDoc = await FirebaseFirestore.instance
+          .collection('therapists')
+          .doc(userId)
+          .get();
+      if (therapistDoc.exists) {
+     
+        
+        return 'therapist';
+      }
+
+    
+      return 'user';
+    } catch (e) {
+      print("Error fetching user role: $e");
+      return 'user'; 
+    }
+  }
+  Future<bool> _checkTherapistApproval(String therapistId) async {
+    DocumentSnapshot therapistDoc = await FirebaseFirestore.instance
+        .collection('therapists')
+        .doc(therapistId)
+        .get();
+
+    if (therapistDoc.exists) {
+      bool isApproved = therapistDoc['approved'] ?? false;
+      
+      return isApproved; 
+    }
+    return false; 
   }
 
-  try {
-    // Check if admin credentials are used
-    if (email == "shihra@gmail.com" && password == "shihra123") {
-      // Admin credentials match, navigate to admin home
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (context) => AdminHomePage(), // Admin Home screen
-        ),
-      );
+  void _loginUser() async {
+    final email = _emailController.text.trim();
+    final password = _passwordController.text.trim();
+
+    if (email.isEmpty || password.isEmpty) {
+      _showSnackBar("Please fill all fields");
       return;
     }
 
-    // Sign in with Firebase Authentication for users and therapists
-    UserCredential userCredential = await _auth.signInWithEmailAndPassword(
-      email: email,
-      password: password,
-    );
-
-    // Fetch user role (You would typically store and fetch roles from Firestore here)
-    String userRole = await _fetchUserRole(userCredential.user!.uid);
-
-    // Navigate based on the role
-    if (userRole == 'user') {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (context) => UserHomePage(), // User Home screen
-        ),
-      );
-    } else if (userRole == 'therapist') {
-      // Check if therapist is approved
-      bool isApproved = await _checkTherapistApproval(userCredential.user!.uid);
-
-      if (isApproved) {
+    try {
+     
+      if (email == "shihra@gmail.com" && password == "shihra123"){
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
-            builder: (context) => TherapistHomePage(), // Therapist Home screen
+            builder: (context) => AdminHomePage(), 
           ),
         );
-      } else {
-        _showSnackBar("Your account is not approved yet. Please contact support.");
+        return;
       }
-    } else {
-      _showSnackBar("Unknown role. Please contact support.");
+
+    
+      UserCredential userCredential = await _auth.signInWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+
+     
+      String userRole = await _fetchUserRole(userCredential.user!.uid);
+    
+      if (userRole == 'user') {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => UserHomePage(), 
+          ),
+        );
+      } else if (userRole == 'therapist') {
+        bool isApproved =
+            await _checkTherapistApproval(userCredential.user!.uid);
+
+        if (isApproved) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) =>
+                  TherapistHomePage(), 
+            ),
+          );
+        } else {
+          _showSnackBar(
+              "Your account is not approved yet. Please contact support.");
+        }
+      } else {
+        _showSnackBar("Unknown role. Please contact support.");
+      }
+    } on FirebaseAuthException catch (e) {
+      if (e.code == 'user-not-found') {
+        _showSnackBar("No user found for this email.");
+      } else if (e.code == 'wrong-password') {
+        _showSnackBar("Incorrect password.");
+      } else {
+        _showSnackBar(e.message ?? "An error occurred");
+      }
+    } catch (e) {
+      _showSnackBar("An unexpected error occurred");
     }
-  } on FirebaseAuthException catch (e) {
-    if (e.code == 'user-not-found') {
-      _showSnackBar("No user found for this email.");
-    } else if (e.code == 'wrong-password') {
-      _showSnackBar("Incorrect password.");
-    } else {
-      _showSnackBar(e.message ?? "An error occurred");
-    }
-  } catch (e) {
-    _showSnackBar("An unexpected error occurred");
   }
-}
-
-// Simulating fetching role from Firestore (this should be implemented in your app)
-Future<String> _fetchUserRole(String userId) async {
-  // Fetch the role from Firestore or Firebase Database here
-  // For now, we'll return a fixed value based on your example
-  DocumentSnapshot userDoc = await FirebaseFirestore.instance.collection('users').doc(userId).get();
-  
-  if (userDoc.exists) {
-    return userDoc['role']; // Assuming role is stored as 'role' in Firestore
-  } else {
-    return "user"; // Default role if not found
-  }
-}
-
-// Check if therapist is approved (in Firestore therapists collection)
-Future<bool> _checkTherapistApproval(String therapistId) async {
-  DocumentSnapshot therapistDoc = await FirebaseFirestore.instance.collection('therapists').doc(therapistId).get();
-
-  if (therapistDoc.exists) {
-    bool isApproved = therapistDoc['approved'] ?? false;
-    return isApproved; // Return approval status
-  }
-  return false; // If therapist document doesn't exist, return false
-}
 
   void _showSnackBar(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
@@ -136,7 +152,6 @@ Future<bool> _checkTherapistApproval(String therapistId) async {
       ),
       body: Stack(
         children: [
-          // Background Gradient
           Container(
             decoration: BoxDecoration(
               gradient: LinearGradient(
@@ -146,14 +161,12 @@ Future<bool> _checkTherapistApproval(String therapistId) async {
               ),
             ),
           ),
-          // Login Form
+       
           SingleChildScrollView(
             padding: const EdgeInsets.all(20.0),
             child: Column(
               children: [
                 SizedBox(height: 120),
-
-                // Email Field
                 _buildTextField(
                   controller: _emailController,
                   label: 'Email Address',
@@ -162,8 +175,6 @@ Future<bool> _checkTherapistApproval(String therapistId) async {
                   keyboardType: TextInputType.emailAddress,
                 ),
                 SizedBox(height: 16),
-
-                // Password Field with Show/Hide Icon
                 _buildPasswordField(
                   controller: _passwordController,
                   label: 'Password',
@@ -171,8 +182,6 @@ Future<bool> _checkTherapistApproval(String therapistId) async {
                   icon: Icons.lock,
                 ),
                 SizedBox(height: 30),
-
-                // Login Button
                 ElevatedButton(
                   onPressed: _loginUser,
                   style: ElevatedButton.styleFrom(
@@ -192,8 +201,6 @@ Future<bool> _checkTherapistApproval(String therapistId) async {
                 ),
 
                 SizedBox(height: 20),
-
-                // Forgot Password
                 TextButton(
                   onPressed: () {
                     Navigator.push(
@@ -202,7 +209,7 @@ Future<bool> _checkTherapistApproval(String therapistId) async {
                           builder: (context) => ForgotPasswordScreen(),
                         ));
 
-                    // Implement password reset
+                    
                   },
                   child: Text(
                     "Forgot Password?",
@@ -279,7 +286,8 @@ Future<bool> _checkTherapistApproval(String therapistId) async {
       ),
       child: TextField(
         controller: controller,
-        obscureText: !_isPasswordVisible, // Toggle visibility based on the _isPasswordVisible value
+        obscureText:
+            !_isPasswordVisible, // Toggle visibility based on the _isPasswordVisible value
         decoration: InputDecoration(
           prefixIcon: Icon(icon, color: Colors.black),
           labelText: label,
@@ -300,7 +308,8 @@ Future<bool> _checkTherapistApproval(String therapistId) async {
             ),
             onPressed: () {
               setState(() {
-                _isPasswordVisible = !_isPasswordVisible; // Toggle password visibility
+                _isPasswordVisible =
+                    !_isPasswordVisible; // Toggle password visibility
               });
             },
           ),

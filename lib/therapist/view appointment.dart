@@ -1,4 +1,6 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class TherapistAppointmentsScreen extends StatefulWidget {
   @override
@@ -8,26 +10,44 @@ class TherapistAppointmentsScreen extends StatefulWidget {
 
 class _TherapistAppointmentsScreenState
     extends State<TherapistAppointmentsScreen> {
-  List<Map<String, dynamic>> appointments = [
-    {
-      "client": "John Doe",
-      "date": "2025-02-18",
-      "time": "10:00 AM",
-      "status": "Pending",
-    },
-    {
-      "client": "Emma Smith",
-      "date": "2025-02-19",
-      "time": "2:30 PM",
-      "status": "Confirmed",
-    },
-    {
-      "client": "Michael Brown",
-      "date": "2025-02-20",
-      "time": "4:00 PM",
-      "status": "Completed",
-    },
-  ];
+  List<Map<String, dynamic>> appointments = [];
+  FirebaseAuth _auth = FirebaseAuth.instance;
+  FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchAppointments();
+  }
+
+  Future<void> _fetchAppointments() async {
+    User? user = _auth.currentUser; // Get the logged-in user
+    if (user != null) {
+      try {
+        // Fetch appointments for the logged-in therapist from Firestore
+        QuerySnapshot snapshot = await _firestore
+            .collection('appointments')
+            .where('therapistId', isEqualTo: user.uid) // filter by therapistId
+            .get();
+
+        List<Map<String, dynamic>> fetchedAppointments = snapshot.docs
+            .map((doc) => {
+                  "client": doc['clientName'],
+                  "date": doc['date'],
+                  "time": doc['time'],
+                  "status": doc['status'],
+                  "id": doc.id,
+                })
+            .toList();
+
+        setState(() {
+          appointments = fetchedAppointments; // Update state with fetched data
+        });
+      } catch (e) {
+        print("Error fetching appointments: $e");
+      }
+    }
+  }
 
   void _showAppointmentDetails(Map<String, dynamic> appointment) {
     showDialog(
@@ -48,10 +68,16 @@ class _TherapistAppointmentsScreenState
           if (appointment["status"] != "Completed")
             TextButton(
               onPressed: () {
-                setState(() {
-                  appointment["status"] = "Completed";
+                // Update appointment status to 'Completed' in Firestore
+                _firestore
+                    .collection('appointments')
+                    .doc(appointment['id'])
+                    .update({'status': 'Completed'}).then((_) {
+                  setState(() {
+                    appointment["status"] = "Completed";
+                  });
+                  Navigator.pop(context);
                 });
-                Navigator.pop(context);
               },
               child: Text("Mark as Completed"),
             ),
@@ -80,40 +106,44 @@ class _TherapistAppointmentsScreenState
             end: Alignment.bottomCenter,
           ),
         ),
-        child: ListView.builder(
-          itemCount: appointments.length,
-          itemBuilder: (context, index) {
-            var appointment = appointments[index];
-            return Card(
-              color: Colors.white,
-              elevation: 4,
-              margin: EdgeInsets.symmetric(vertical: 6),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
+        child: appointments.isEmpty
+            ? Center(
+                child: CircularProgressIndicator(),
+              )
+            : ListView.builder(
+                itemCount: appointments.length,
+                itemBuilder: (context, index) {
+                  var appointment = appointments[index];
+                  return Card(
+                    color: Colors.white,
+                    elevation: 4,
+                    margin: EdgeInsets.symmetric(vertical: 6),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: ListTile(
+                      leading:
+                          Icon(Icons.calendar_today, color: Colors.deepOrangeAccent),
+                      title: Text(
+                        appointment["client"],
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      subtitle:
+                          Text("${appointment["date"]} - ${appointment["time"]}"),
+                      trailing: Text(
+                        appointment["status"],
+                        style: TextStyle(
+                          color: appointment["status"] == "Completed"
+                              ? Colors.green
+                              : Colors.redAccent,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      onTap: () => _showAppointmentDetails(appointment),
+                    ),
+                  );
+                },
               ),
-              child: ListTile(
-                leading:
-                    Icon(Icons.calendar_today, color: Colors.deepOrangeAccent),
-                title: Text(
-                  appointment["client"],
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
-                subtitle:
-                    Text("${appointment["date"]} - ${appointment["time"]}"),
-                trailing: Text(
-                  appointment["status"],
-                  style: TextStyle(
-                    color: appointment["status"] == "Completed"
-                        ? Colors.green
-                        : Colors.redAccent,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                onTap: () => _showAppointmentDetails(appointment),
-              ),
-            );
-          },
-        ),
       ),
     );
   }
