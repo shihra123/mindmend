@@ -19,6 +19,46 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _passwordController = TextEditingController();
   final FirebaseAuth _auth = FirebaseAuth.instance;
   bool _isPasswordVisible = false; // To toggle password visibility
+// Fetch the role based on user ID
+Future<String> _fetchUserRole(String userId) async {
+  try {
+    // First, check the 'users' collection for a user role
+    DocumentSnapshot userDoc = await FirebaseFirestore.instance.collection('users').doc(userId).get();
+    
+    if (userDoc.exists) {
+      print("User Document: ${userDoc.data()}");
+      // Return the role from 'users' collection if it exists
+      return userDoc['role'] ?? 'user'; // Default to 'user' if no role is set
+    }
+
+    // If not found in the 'users' collection, check the 'therapists' collection
+    DocumentSnapshot therapistDoc = await FirebaseFirestore.instance.collection('therapists').doc(userId).get();
+    if (therapistDoc.exists) {
+      print("Therapist Document: ${therapistDoc.data()}");
+      // Return 'therapist' if found in the 'therapists' collection
+      return 'therapist';
+    }
+
+    // Default to 'user' if the user is not found in either collection
+    return 'user';
+  } catch (e) {
+    print("Error fetching user role: $e");
+    return 'user'; // Default to 'user' in case of error
+  }
+}
+
+// Check if therapist is approved (in Firestore therapists collection)
+Future<bool> _checkTherapistApproval(String therapistId) async {
+  DocumentSnapshot therapistDoc = await FirebaseFirestore.instance.collection('therapists').doc(therapistId).get();
+
+  if (therapistDoc.exists) {
+    bool isApproved = therapistDoc['approved'] ?? false;
+    print("Therapist Approved: $isApproved");
+    return isApproved; // Return approval status
+  }
+  return false; // If therapist document doesn't exist, return false
+}
+
 void _loginUser() async {
   final email = _emailController.text.trim();
   final password = _passwordController.text.trim();
@@ -49,6 +89,7 @@ void _loginUser() async {
 
     // Fetch user role (You would typically store and fetch roles from Firestore here)
     String userRole = await _fetchUserRole(userCredential.user!.uid);
+    print("Fetched User Role: $userRole"); // Debugging: Check the fetched role
 
     // Navigate based on the role
     if (userRole == 'user') {
@@ -88,35 +129,11 @@ void _loginUser() async {
   }
 }
 
-// Simulating fetching role from Firestore (this should be implemented in your app)
-Future<String> _fetchUserRole(String userId) async {
-  // Fetch the role from Firestore or Firebase Database here
-  // For now, we'll return a fixed value based on your example
-  DocumentSnapshot userDoc = await FirebaseFirestore.instance.collection('users').doc(userId).get();
-  
-  if (userDoc.exists) {
-    return userDoc['role']; // Assuming role is stored as 'role' in Firestore
-  } else {
-    return "user"; // Default role if not found
-  }
+void _showSnackBar(String message) {
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(content: Text(message)),
+  );
 }
-
-// Check if therapist is approved (in Firestore therapists collection)
-Future<bool> _checkTherapistApproval(String therapistId) async {
-  DocumentSnapshot therapistDoc = await FirebaseFirestore.instance.collection('therapists').doc(therapistId).get();
-
-  if (therapistDoc.exists) {
-    bool isApproved = therapistDoc['approved'] ?? false;
-    return isApproved; // Return approval status
-  }
-  return false; // If therapist document doesn't exist, return false
-}
-
-  void _showSnackBar(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message)),
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
