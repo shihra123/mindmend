@@ -5,49 +5,6 @@ import 'package:mindmend/user/moodtracking.dart';
 import 'package:mindmend/user/setgoalscreen.dart';
 import 'package:mindmend/user/user_guided_meditation.dart';  
 
-class GeminiAPI {
-  final String apiKey = 'AIzaSyBICQYYc8mqAyOxWOULqy-AwB-wc9YMXS4';
-  final String endpoint = 'https://generativeai.googleapis.com/v1beta2/generate';
-
-  Future<Map<String, dynamic>> geminiAI(String prompt, {int maxRetries = 10}) async {
-    Map<String, dynamic> responseData = {};
-    int retries = 0;
-
-    while (retries < maxRetries) {
-      try {
-        final response = await http.post(
-          Uri.parse(endpoint),
-          headers: {
-            'Authorization': 'Bearer $apiKey',
-            'Content-Type': 'application/json',
-          },
-          body: jsonEncode({
-            'prompt': prompt,
-            'model': 'gemini-pro',
-          }),
-        );
-
-        if (response.statusCode == 200) {
-          var story = jsonDecode(response.body);
-          responseData = {'data': story, 'flag': true};
-          return responseData;
-        } else {
-          throw Exception('Failed to load content');
-        }
-      } catch (e) {
-        retries++;
-        print('Attempt $retries failed: $e');
-      }
-    }
-
-    return {
-      'message': 'Failed to fetch data after $maxRetries attempts',
-      'flag': false,
-      'data': {},
-    };
-  }
-}
-
 class HomePageScreen extends StatefulWidget {
   @override
   _HomePageScreenState createState() => _HomePageScreenState();
@@ -59,24 +16,43 @@ class _HomePageScreenState extends State<HomePageScreen> {
   @override
   void initState() {
     super.initState();
-    _fetchDailyQuote();
+    generateMindFreshQuote();
   }
 
-  Future<void> _fetchDailyQuote() async {
-    GeminiAPI geminiAPI = GeminiAPI();
-    var result = await geminiAPI.geminiAI(
-      'Give me a short motivational quote related to health and mood refreshment.',
+Future<void> generateMindFreshQuote() async {
+  final Uri url = Uri.parse(
+    "https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=AIzaSyB2mKwjSjP2zeCLnXh6COx3RoxWMlaI2yY",
+  );
+
+  final Map<String, dynamic> requestBody = {
+    "contents": [
+      {"parts": [{"text": "Give me a short, positive, mind-refreshing health quote."}]}
+    ]
+  };
+
+  try {
+    final response = await http.post(
+      url,
+      headers: {"Content-Type": "application/json"},
+      body: jsonEncode(requestBody),
     );
 
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      setState(() {
+        dailyQuote = data["candidates"][0]["content"]["parts"][0]["text"];
+      });
+    } else {
+      setState(() {
+        dailyQuote = "Failed to load quote.";
+      });
+    }
+  } catch (e) {
     setState(() {
-      if (result['flag']) {
-        dailyQuote = result['data']['candidates'][0]['content']['parts'][0]['text'] ??
-            "Stay healthy and positive!";
-      } else {
-        dailyQuote = result['message'] ?? "Failed to fetch quote. Try again later.";
-      }
+      dailyQuote = "Error fetching quote.";
     });
   }
+}
 
  @override
 Widget build(BuildContext context) {
