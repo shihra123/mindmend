@@ -26,7 +26,7 @@ Future<void> generateMindFreshQuote() async {
 
   final Map<String, dynamic> requestBody = {
     "contents": [
-      {"parts": [{"text": "Give me a short, positive, mind-refreshing health quote."}]}
+      {"parts": [{"text": "Give me a random, fresh, mind-refreshing health quote. Avoid repetition."}]}
     ]
   };
 
