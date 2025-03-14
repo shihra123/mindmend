@@ -82,17 +82,3 @@ class _TherapistHomePageState extends State<TherapistHomePage> {
   }
 }
 
-// Placeholder Screens for Navigation
-class NotificationsScreen extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text("Notifications"),
-        backgroundColor: Colors.deepOrangeAccent,
-      ),
-      body: Center(
-          child: Text("No new notifications", style: TextStyle(fontSize: 18))),
-    );
-  }
-}

@@ -199,7 +199,7 @@ Future<void> _pickImage() async {
                     : null,
               ),
             ),
-                // Therapist Name Field
+               
                 _buildTextField(
                   controller: _nameController,
                   label: 'Therapist Name',
