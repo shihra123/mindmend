@@ -1,7 +1,11 @@
-import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart';
 
 class GuidedMeditationScreen extends StatefulWidget {
+  final String therapistId;
+
+  GuidedMeditationScreen({required this.therapistId});
+
   @override
   _GuidedMeditationScreenState createState() => _GuidedMeditationScreenState();
 }
@@ -15,6 +19,7 @@ class _GuidedMeditationScreenState extends State<GuidedMeditationScreen> {
     super.dispose();
   }
 
+  // Add new session
   void _addNewSession() {
     showDialog(
       context: context,
@@ -38,7 +43,8 @@ class _GuidedMeditationScreenState extends State<GuidedMeditationScreen> {
                 FirebaseFirestore.instance.collection('meditations').add({
                   'title': _sessionController.text,
                   'description': "User added meditation session",
-                  'audioUrl': ""
+                  'audioUrl': "",
+                  'therapistId': widget.therapistId, 
                 });
                 Navigator.pop(context);
                 _sessionController.clear();
@@ -73,7 +79,10 @@ class _GuidedMeditationScreenState extends State<GuidedMeditationScreen> {
           ),
         ),
         child: StreamBuilder(
-          stream: FirebaseFirestore.instance.collection('meditations').snapshots(),
+          stream: FirebaseFirestore.instance
+              .collection('meditations')
+              .where('therapistId', isEqualTo: widget.therapistId)  // Filter by therapistId
+              .snapshots(),
           builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return Center(child: CircularProgressIndicator());

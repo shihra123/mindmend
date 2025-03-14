@@ -109,7 +109,7 @@ Widget build(BuildContext context) {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => GuidedMeditationScreen(),
+                    builder: (context) => GuidedMeditationScreen(therapistId: '',),
                   ),
                 );
               },

@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
 class MeditationScreen extends StatefulWidget {
@@ -14,12 +15,44 @@ class _MeditationScreenState extends State<MeditationScreen> {
     "Relaxation Guide - 18 min"
   ];
 
+  List<Map<String, dynamic>> completedAppointments = [];
+
   final TextEditingController _sessionController = TextEditingController();
+  String selectedMeditation = "";
 
   @override
   void dispose() {
     _sessionController.dispose();
     super.dispose();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchCompletedAppointments();
+  }
+
+  // Fetch completed appointments from Firestore
+  Future<void> _fetchCompletedAppointments() async {
+    try {
+      final snapshot = await FirebaseFirestore.instance
+          .collection('appointments')
+          .where('status', isEqualTo: 'Completed')
+          .get();
+
+      setState(() {
+        completedAppointments = snapshot.docs
+            .map((doc) => {
+                  'client': doc['client'],
+                  'date': doc['date'],
+                  'time': doc['time'],
+                  'appointmentId': doc.id,
+                })
+            .toList();
+      });
+    } catch (e) {
+      print('Error fetching appointments: $e');
+    }
   }
 
   void _addNewSession() {
@@ -56,11 +89,60 @@ class _MeditationScreenState extends State<MeditationScreen> {
     );
   }
 
-  void _playSession(String session) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text("Playing: $session 🎵"),
-        duration: const Duration(seconds: 2),
+  // Assign meditation session to completed client
+  void _assignMeditationToClient(Map<String, dynamic> appointment) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text("Assign Meditation to ${appointment['client']}"),
+        content: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text("Choose a meditation session for ${appointment['client']}:"),
+            DropdownButton<String>(
+              value: selectedMeditation.isEmpty ? null : selectedMeditation,
+              hint: const Text("Select Meditation"),
+              onChanged: (String? newValue) {
+                setState(() {
+                  selectedMeditation = newValue!;
+                });
+                Navigator.pop(context); // Close dialog after selecting meditation
+                // Here you can save the assignment to Firestore or any database
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                        "Meditation session '$selectedMeditation' assigned to ${appointment['client']}"),
+                    duration: const Duration(seconds: 2),
+                  ),
+                );
+
+                // Optionally, update Firestore with the selected meditation
+                FirebaseFirestore.instance
+                    .collection('appointments')
+                    .doc(appointment['appointmentId'])
+                    .update({
+                  'meditationAssigned': selectedMeditation,
+                });
+              },
+              items: meditationSessions.map<DropdownMenuItem<String>>(
+                (String session) {
+                  return DropdownMenuItem<String>(
+                    value: session,
+                    child: Text(session),
+                  );
+                },
+              ).toList(),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context); // Close the dialog without doing anything
+            },
+            child: const Text("Cancel"),
+          ),
+        ],
       ),
     );
   }
@@ -69,7 +151,7 @@ class _MeditationScreenState extends State<MeditationScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Meditation"),
+        title: const Text("Meditation for Clients"),
         backgroundColor: Colors.deepOrangeAccent,
         centerTitle: true,
       ),
@@ -98,10 +180,15 @@ class _MeditationScreenState extends State<MeditationScreen> {
               ),
             ),
             const SizedBox(height: 10),
+            const Text(
+              "Completed Appointments",
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
             Expanded(
               child: ListView.builder(
-                itemCount: meditationSessions.length,
+                itemCount: completedAppointments.length,
                 itemBuilder: (context, index) {
+                  var appointment = completedAppointments[index];
                   return Card(
                     color: Colors.white,
                     elevation: 4,
@@ -110,17 +197,18 @@ class _MeditationScreenState extends State<MeditationScreen> {
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: ListTile(
-                      leading: const Icon(Icons.self_improvement,
-                          color: Colors.deepOrangeAccent),
+                      leading: const Icon(Icons.person, color: Colors.deepOrangeAccent),
                       title: Text(
-                        meditationSessions[index],
+                        appointment["client"],
                         style: const TextStyle(fontWeight: FontWeight.bold),
                       ),
+                      subtitle:
+                          Text("${appointment["date"]} - ${appointment["time"]}"),
                       trailing: IconButton(
                         icon: const Icon(Icons.play_arrow,
                             color: Colors.deepOrangeAccent),
                         onPressed: () =>
-                            _playSession(meditationSessions[index]),
+                            _assignMeditationToClient(appointment),
                       ),
                     ),
                   );

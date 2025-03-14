@@ -13,7 +13,7 @@ class _TherapistHomePageState extends State<TherapistHomePage> {
   int _selectedIndex = 0;
 
   final List<Widget> _pages = [
-    TherapistNotificationsScreen(),
+    TherapistNotificationsScreen(therapistId: '',),
     MeditationScreen(),
     TherapistAppointmentsScreen(),
     ChatScreen(),
