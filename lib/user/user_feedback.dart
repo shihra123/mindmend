@@ -1,109 +1,100 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_rating_bar/flutter_rating_bar.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
-class UserFeedbackScreen extends StatefulWidget {
-  const UserFeedbackScreen({super.key});
+class FeedbackScreen extends StatefulWidget {
+  final Map<String, dynamic> therapist;
+
+  FeedbackScreen({required this.therapist});
 
   @override
-  _UserFeedbackScreenState createState() => _UserFeedbackScreenState();
+  _FeedbackScreenState createState() => _FeedbackScreenState();
 }
 
-class _UserFeedbackScreenState extends State<UserFeedbackScreen> {
-  final _formKey = GlobalKey<FormState>();
-  final TextEditingController _feedbackController = TextEditingController();
-  bool _isSubmitting = false;
+class _FeedbackScreenState extends State<FeedbackScreen> {
+  double _rating = 0.0;
+  TextEditingController _commentController = TextEditingController();
 
   void _submitFeedback() async {
-    if (!_formKey.currentState!.validate()) {
+    if (_rating == 0.0) {
+      // Ensure rating is provided
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Please provide a rating")),
+      );
       return;
     }
 
-    setState(() {
-      _isSubmitting = true;
-    });
+    try {
+      // Save the feedback in Firestore
+      await FirebaseFirestore.instance.collection('feedbacks').add({
+        'therapistId': widget.therapist['id'],
+        'rating': _rating,
+        'comment': _commentController.text,
+        'userId': 'currentUserId', // Replace with actual user ID
+        'timestamp': FieldValue.serverTimestamp(),
+      });
 
-    // Simulating a delay for feedback submission (e.g., saving to a server or database)
-    await Future.delayed(const Duration(seconds: 2));
+      // Show confirmation message
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Feedback submitted successfully")),
+      );
 
-    setState(() {
-      _isSubmitting = false;
-    });
-
-    // Show a confirmation message after submission
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Feedback submitted successfully!')),
-    );
-
-    // Clear the feedback field
-    _feedbackController.clear();
+      // Go back to the previous screen
+      Navigator.pop(context);
+    } catch (e) {
+      print("Error submitting feedback: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Error submitting feedback")),
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    final therapist = widget.therapist;
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('User Feedback'),
-        backgroundColor: Colors.deepOrangeAccent,
+        title: Text("Give Feedback"),
+        backgroundColor: Colors.deepOrange,
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Title
-            const Text(
-              'We value your feedback!',
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                color: Colors.deepOrangeAccent,
+            Text('Therapist: ${therapist['name']}'),
+            SizedBox(height: 10),
+            Text('Rate your experience'),
+            RatingBar.builder(
+              initialRating: _rating,
+              minRating: 1,
+              itemSize: 40.0,
+              itemCount: 5,
+              itemPadding: EdgeInsets.symmetric(horizontal: 4.0),
+              itemBuilder: (context, _) => Icon(
+                Icons.star,
+                color: Colors.amber,
               ),
+              onRatingUpdate: (rating) {
+                setState(() {
+                  _rating = rating;
+                });
+              },
             ),
-            const SizedBox(height: 20),
-
-            // Form to collect feedback
-            Form(
-              key: _formKey,
-              child: Column(
-                children: [
-                  // Feedback Text Field
-                  TextFormField(
-                    controller: _feedbackController,
-                    maxLines: 5,
-                    decoration: InputDecoration(
-                      labelText: 'Your Feedback',
-                      hintText: 'Write your feedback here...',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12.0),
-                      ),
-                      filled: true,
-                      fillColor: Colors.white,
-                    ),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter your feedback';
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 20),
-
-                  // Submit Button
-                  ElevatedButton(
-                    onPressed: _isSubmitting ? null : _submitFeedback,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.deepOrangeAccent,
-                      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 80),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(30),
-                      ),
-                      elevation: 5,
-                      textStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                    ),
-                    child: _isSubmitting
-                        ? const CircularProgressIndicator(color: Colors.white)
-                        : const Text('Submit Feedback'),
-                  ),
-                ],
+            SizedBox(height: 20),
+            TextField(
+              controller: _commentController,
+              decoration: InputDecoration(
+                labelText: 'Comment (Optional)',
+                border: OutlineInputBorder(),
               ),
+              maxLines: 5,
+            ),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: _submitFeedback,
+              child: Text("Submit Feedback"),
             ),
           ],
         ),

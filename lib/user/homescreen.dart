@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:firebase_database/firebase_database.dart';
 import 'package:mindmend/user/moodtracking.dart';
 import 'package:mindmend/user/setgoalscreen.dart';
 import 'package:mindmend/user/user_guided_meditation.dart';  
@@ -12,12 +13,36 @@ class HomePageScreen extends StatefulWidget {
 
 class _HomePageScreenState extends State<HomePageScreen> {
   String dailyQuote = "Loading...";
+  String userName = "User";
+  String profileImage = "";
 
   @override
   void initState() {
     super.initState();
+    fetchUserData();
     generateMindFreshQuote();
   }
+
+  Future<void> fetchUserData() async {
+  try {
+    DatabaseReference userRef = FirebaseDatabase.instance.ref().child('users/rsqATkOucoeMRuEl5KfnzlZl5LA3');
+    DatabaseEvent event = await userRef.once();
+    
+    if (event.snapshot.exists) {
+      Map<dynamic, dynamic> userData = event.snapshot.value as Map<dynamic, dynamic>;
+      setState(() {
+        userName = userData['name'] ?? "User";
+        profileImage = userData['profileImage'] ?? "";
+      });
+      print("Fetched User Data: $userData"); // Debugging line
+    } else {
+      print("User data does not exist!");
+    }
+  } catch (e) {
+    print("Error fetching user data: $e");
+  }
+}
+
 
 Future<void> generateMindFreshQuote() async {
   final Uri url = Uri.parse(
@@ -58,15 +83,16 @@ Future<void> generateMindFreshQuote() async {
 Widget build(BuildContext context) {
   return Scaffold(
     appBar: AppBar(
-      title: Text("Mind Mend"),
-      backgroundColor: Colors.deepOrangeAccent,
+      title: Text("Mind Mend", style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold)),
+      backgroundColor: Colors.black,
+      elevation: 5,
     ),
     body: Container(
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [Colors.blue.shade800, Colors.lightBlue.shade400],
+          colors: [Colors.grey, Colors.grey],
           begin: Alignment.topLeft,
-          end: Alignment.topRight,
+          end: Alignment.bottomRight,
         ),
       ),
       child: SingleChildScrollView(
@@ -74,6 +100,23 @@ Widget build(BuildContext context) {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            Row(
+              children: [
+                CircleAvatar(
+                  radius: 30,
+                  backgroundImage: profileImage.isNotEmpty ? NetworkImage(profileImage) : AssetImage('assets/user_profile.jpg') as ImageProvider,
+                ),
+                SizedBox(width: 10),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text("HELLO,", style: TextStyle(fontSize: 18, color: Colors.white)),
+                    Text(userName, style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white)),
+                  ],
+                ),
+              ],
+            ),
+            SizedBox(height: 20),
             _buildSectionTitle("Daily Health & Mood Refreshment Quote"),
             _buildQuoteCard(dailyQuote),
             _buildSectionTitle("Guided Meditation"),
@@ -117,12 +160,11 @@ Widget build(BuildContext context) {
           ),
         );
       },
-      backgroundColor: Colors.deepOrangeAccent,
-      child: Icon(Icons.insert_emoticon),
+      backgroundColor: Colors.black,
+      child: Icon(Icons.insert_emoticon, color: Colors.white),
     ),
   );
 }
-
 
   Widget _buildSectionTitle(String title) {
     return Padding(
@@ -130,15 +172,17 @@ Widget build(BuildContext context) {
       child: Text(
         title,
         style: TextStyle(
-            fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
+            fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white),
       ),
     );
   }
 
   Widget _buildQuoteCard(String quote) {
     return Card(
-      color: Colors.orangeAccent,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      color: Colors.black,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+      shadowColor: Colors.grey,
+      elevation: 5,
       child: Padding(
         padding: EdgeInsets.all(16),
         child: Text(
@@ -157,13 +201,15 @@ Widget build(BuildContext context) {
   Widget _buildFeatureCard(
       String title, String description, IconData icon, VoidCallback onTap) {
     return Card(
-      color: Colors.white,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      color: Colors.black,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+      shadowColor: Colors.grey,
+      elevation: 5,
       child: ListTile(
-        leading: Icon(icon, color: Colors.deepOrangeAccent),
-        title: Text(title, style: TextStyle(fontWeight: FontWeight.bold)),
-        subtitle: Text(description),
-        trailing: Icon(Icons.arrow_forward, color: Colors.deepOrangeAccent),
+        leading: Icon(icon, color: Colors.white, size: 30),
+        title: Text(title, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: Colors.white)),
+        subtitle: Text(description, style: TextStyle(fontSize: 14, color: Colors.grey.shade300)),
+        trailing: Icon(Icons.arrow_forward, color: Colors.white),
         onTap: onTap,
       ),
     );

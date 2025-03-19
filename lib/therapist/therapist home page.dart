@@ -53,7 +53,7 @@ class _TherapistHomePageState extends State<TherapistHomePage> {
             onTap: _onItemTapped,
             selectedItemColor: const Color.fromARGB(255, 255, 255, 255),
             unselectedItemColor: Colors.white70,
-            backgroundColor: Colors.deepOrangeAccent,
+            backgroundColor: Colors.grey,
             type: BottomNavigationBarType.fixed,
             elevation: 10,
             showUnselectedLabels: false,

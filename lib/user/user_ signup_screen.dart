@@ -191,7 +191,7 @@ Future<void> _pickImage() async {
           Container(
             decoration: BoxDecoration(
               gradient: LinearGradient(
-                colors: [Colors.blue.shade800, Colors.lightBlue.shade400],
+                colors: [Colors.grey, Colors.grey],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
@@ -268,7 +268,7 @@ Future<void> _pickImage() async {
                 DropdownButtonFormField<String>(
                   value: _selectedGender,
                   decoration: InputDecoration(
-                    prefixIcon: Icon(Icons.person, color: Colors.deepOrange),
+                    prefixIcon: Icon(Icons.person, color: Colors.black),
                     labelText: 'Gender',
                     filled: true,
                     fillColor: Colors.white,
@@ -327,7 +327,7 @@ Future<void> _pickImage() async {
                   style: ElevatedButton.styleFrom(
                     padding:
                         EdgeInsets.symmetric(vertical: 16.0, horizontal: 80.0),
-                    backgroundColor: Colors.deepOrangeAccent,
+                    backgroundColor: Colors.black,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(30.0),
                     ),
@@ -371,11 +371,11 @@ Future<void> _pickImage() async {
         controller: controller,
         obscureText: !isPasswordVisible,
         decoration: InputDecoration(
-          prefixIcon: Icon(icon, color: Colors.deepOrange),
+          prefixIcon: Icon(icon, color: Colors.black),
           labelText: label,
           hintText: hintText,
-          hintStyle: TextStyle(color: Colors.grey[600]),
-          labelStyle: TextStyle(color: Colors.deepOrange),
+          hintStyle: TextStyle(color: Colors.black),
+          labelStyle: TextStyle(color: Colors.black),
           filled: true,
           fillColor: Colors.white,
           border: OutlineInputBorder(
@@ -386,7 +386,7 @@ Future<void> _pickImage() async {
           suffixIcon: IconButton(
             icon: Icon(
               isPasswordVisible ? Icons.visibility : Icons.visibility_off,
-              color: Colors.deepOrange,
+              color: Colors.black,
             ),
             onPressed: togglePasswordVisibility,
           ),
@@ -420,11 +420,11 @@ Future<void> _pickImage() async {
         obscureText: obscureText,
         keyboardType: keyboardType,
         decoration: InputDecoration(
-          prefixIcon: Icon(icon, color: Colors.deepOrange),
+          prefixIcon: Icon(icon, color: Colors.black),
           labelText: label,
           hintText: hintText,
-          hintStyle: TextStyle(color: Colors.grey[600]),
-          labelStyle: TextStyle(color: Colors.deepOrange),
+          hintStyle: TextStyle(color: Colors.black),
+          labelStyle: TextStyle(color: Colors.black),
           filled: true,
           fillColor: Colors.white,
           border: OutlineInputBorder(

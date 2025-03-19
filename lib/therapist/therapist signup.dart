@@ -157,7 +157,7 @@ Future<void> _pickImage() async {
           style: TextStyle(
             fontSize: 28,
             fontWeight: FontWeight.bold,
-            color: Colors.white,
+            color: Colors.black,
           ),
         ),
         centerTitle: true,
@@ -169,9 +169,7 @@ Future<void> _pickImage() async {
             decoration: const BoxDecoration(
               gradient: LinearGradient(
                 colors: [
-                  Color(0xFFFFA07A),
-                  Color(0xFFFF6347),
-                  Color(0xFFFF4500)
+                  Colors.grey
                 ],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,

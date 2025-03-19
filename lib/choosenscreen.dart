@@ -10,7 +10,7 @@ class WelcomeScreen extends StatelessWidget {
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: [Colors.blueAccent, Colors.lightBlue],
+            colors: [Colors.grey, Colors.grey],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
           ),
@@ -24,7 +24,7 @@ class WelcomeScreen extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 28,
                   fontWeight: FontWeight.bold,
-                  color: Colors.white,
+                  color: Colors.black,
                 ),
               ),
               SizedBox(height: 10),
@@ -41,7 +41,7 @@ class WelcomeScreen extends StatelessWidget {
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
                   padding: EdgeInsets.symmetric(horizontal: 40, vertical: 15),
-                  backgroundColor: Colors.deepOrange,
+                  backgroundColor: Colors.black,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(30),
                   ),
@@ -63,7 +63,7 @@ class WelcomeScreen extends StatelessWidget {
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
                   padding: EdgeInsets.symmetric(horizontal: 40, vertical: 15),
-                  backgroundColor: Colors.deepOrange,
+                  backgroundColor: Colors.black,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(30),
                   ),
@@ -100,7 +100,7 @@ class WelcomeScreen extends StatelessWidget {
                 },
                 child: Text(
                   "Login",
-                  style: TextStyle(fontSize: 18, color: Colors.deepOrange),
+                  style: TextStyle(fontSize: 18, color: Colors.black),
                 ),
               ),
             ],
