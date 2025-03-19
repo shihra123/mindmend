@@ -1,8 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:mindmend/user/payment_process_screen.dart';
-
+import 'package:mindmend/user/available%20_slots.dart';
 
 class BookAppointmentScreen extends StatefulWidget {
   @override
@@ -27,22 +26,25 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
     }
   }
 
-  Future<void> _bookAppointment(Map<String, dynamic> therapist) async {
-    try {
-      final user = _auth.currentUser;
-      if (user == null) return;
+Future<void> _bookAppointment(Map<String, dynamic> therapist) async {
+  try {
+    final therapistId = therapist['uid']; // Assuming 'uid' is the field for therapist ID
 
-      // Navigate to the payment screen and pass the therapist details
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => PaymentScreen(therapist: therapist),
+    // Navigate to the TherapistDetailsScreen and pass both therapist data and therapistId
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => TherapistDetailsScreen(
+          therapist: therapist,  // Pass the entire therapist data
+          therapistId: therapistId,  // Pass the therapist's ID
         ),
-      );
-    } catch (e) {
-      print("Error booking appointment: $e");
-    }
+      ),
+    );
+  } catch (e) {
+    print("Error booking appointment: $e");
   }
+}
+
 
   Future<void> _giveFeedback(Map<String, dynamic> therapist) async {
     TextEditingController feedbackController = TextEditingController();
@@ -114,113 +116,157 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Book an Appointment"),
+        title: Text(
+          "mind mend",
+          style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+        ),
         backgroundColor: Colors.white,
+        elevation: 0,
+        iconTheme: IconThemeData(color: Colors.black),
       ),
-      body: FutureBuilder<List<Map<String, dynamic>>>( // Fetch therapists from Firestore
-        future: _fetchTherapists(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(child: CircularProgressIndicator());
-          }
-          if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return Center(child: Text("No therapists available"));
-          }
-
-          final therapists = snapshot.data!;
-
-          return ListView.builder(
-            itemCount: therapists.length,
-            itemBuilder: (context, index) {
-              final therapist = therapists[index];
-
-              return Card(
-                margin: EdgeInsets.all(10),
-                elevation: 5,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      ListTile(
-                        leading: CircleAvatar(
-                          radius: 40,
-                          backgroundImage: therapist['profileImage'] != null
-                              ? NetworkImage(therapist['profileImage'])
-                              : null,
-                          child: therapist['profileImage'] == null
-                              ? Icon(Icons.person, size: 40, color: Colors.grey)
-                              : null,
-                        ),
-                        title: Text(
-                          therapist['name'] ?? "Unknown",
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black,
-                          ),
-                        ),
-                        subtitle: Text(
-                          therapist['qualification'] ?? "Not specified",
-                          style: TextStyle(fontSize: 16, color: Colors.black54),
-                        ),
-                      ),
-                      SizedBox(height: 10),
-                      _buildDetailRow(Icons.email, therapist['email']),
-                      _buildDetailRow(Icons.phone, therapist['contactNumber']),
-                      _buildDetailRow(Icons.attach_money, "Fees: ₹${therapist['fees']}"),
-                      SizedBox(height: 15),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          ElevatedButton(
-                            onPressed: () => _bookAppointment(therapist),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.black,
-                              padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                            ),
-                            child: Text("Book Now", style: TextStyle(color: Colors.white)),
-                          ),
-                          ElevatedButton(
-                            onPressed: () => _giveFeedback(therapist),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.black12,
-                              padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                            ),
-                            child: Text("Give Feedback", style: TextStyle(color: Colors.white)),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            },
-          );
-        },
-      ),
-    );
-  }
-
-  Widget _buildDetailRow(IconData icon, String text) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 5),
-      child: Row(
+      body: Column(
         children: [
-          Icon(icon, color: Colors.black),
-          SizedBox(width: 10),
-          Text(
-            text,
-            style: TextStyle(fontSize: 16, color: Colors.black54),
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: TextField(
+              decoration: InputDecoration(
+                hintText: 'Search by doctor’s name',
+                prefixIcon: Icon(Icons.search, color: Colors.grey),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8.0),
+                  borderSide: BorderSide(color: Colors.grey),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8.0),
+                  borderSide: BorderSide(color: Colors.grey),
+                ),
+              ),
+            ),
+          ),
+          Expanded(
+            child: FutureBuilder<List<Map<String, dynamic>>>(
+              future: _fetchTherapists(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return Center(child: CircularProgressIndicator());
+                }
+                if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                  return Center(child: Text("No therapists available"));
+                }
+
+                final therapists = snapshot.data!;
+
+                return ListView.builder(
+                  padding: EdgeInsets.all(16.0),
+                  itemCount: therapists.length,
+                  itemBuilder: (context, index) {
+                    final therapist = therapists[index];
+
+                    return Card(
+                      margin: EdgeInsets.only(bottom: 16.0),
+                      elevation: 2,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      color: Colors.grey[100], // Light grey background for the card
+                      child: Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                CircleAvatar(
+                                  radius: 30,
+                                  backgroundImage: therapist['profileImage'] != null
+                                      ? NetworkImage(therapist['profileImage'])
+                                      : null,
+                                  child: therapist['profileImage'] == null
+                                      ? Icon(Icons.person, size: 30, color: Colors.grey)
+                                      : null,
+                                ),
+                                SizedBox(width: 16.0),
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      therapist['name'] ?? "Unknown",
+                                      style: TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.black,
+                                      ),
+                                    ),
+                                    Text(
+                                      therapist['qualification'] ?? "Not specified",
+                                      style: TextStyle(fontSize: 14, color: Colors.grey[700]),
+                                    ),
+                                    SizedBox(height: 8.0),
+                                    Row(
+                                      children: [
+                                        Icon(Icons.star, color: Colors.amber, size: 16.0),
+                                        SizedBox(width: 4.0),
+                                        Text(
+                                          "4.5", // Replace with dynamic rating from Firestore
+                                          style: TextStyle(fontSize: 14, color: Colors.grey[700]),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                            SizedBox(height: 16.0),
+                            Text(
+                              "\$${therapist['fees']}",
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black,
+                              ),
+                            ),
+                            SizedBox(height: 16.0),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                ElevatedButton(
+                                  onPressed: () => _giveFeedback(therapist),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.black, // Black button
+                                    padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                  ),
+                                  child: Text(
+                                    "Give Feedback",
+                                    style: TextStyle(color: Colors.white),
+                                  ),
+                                ),
+                                ElevatedButton(
+                                  onPressed: () => _bookAppointment(therapist),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.black, // Black button
+                                    padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                  ),
+                                  child: Text(
+                                    "Book Appointment",
+                                    style: TextStyle(color: Colors.white),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                );
+              },
+            ),
           ),
         ],
       ),

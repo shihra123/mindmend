@@ -1,4 +1,6 @@
 import 'dart:convert';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:firebase_database/firebase_database.dart';
@@ -15,7 +17,7 @@ class HomePageScreen extends StatefulWidget {
 
 class _HomePageScreenState extends State<HomePageScreen> {
   String dailyQuote = "Loading...";
-  String userName = "User";
+  String userName = '';
   String profileImage = " ";
 
   @override
@@ -24,27 +26,36 @@ class _HomePageScreenState extends State<HomePageScreen> {
     fetchUserData();
     generateMindFreshQuote();
   }
-
-  Future<void> fetchUserData() async {
+Future<void> fetchUserData() async {
   try {
-    DatabaseReference userRef = FirebaseDatabase.instance.ref().child('users/rsqATkOucoeMRuEl5KfnzlZl5LA3');
-    DatabaseEvent event = await userRef.once();
-    
-    if (event.snapshot.exists) {
-      Map<dynamic, dynamic> userData = event.snapshot.value as Map<dynamic, dynamic>;
-      setState(() {
-        userName = userData['name'] ?? "User";
-        profileImage = userData['profileImage'] ?? "";
-      });
-      print("Fetched User Data: $userData");
+    // Get the current logged-in user
+    User? user = FirebaseAuth.instance.currentUser;
+
+    if (user != null) {
+      String userId = user.uid;
+
+      // Fetch user data from Firestore collection 'users'
+      DocumentSnapshot userDoc = await FirebaseFirestore.instance.collection('users').doc(userId).get();
+
+      if (userDoc.exists) {
+        Map<String, dynamic> userData = userDoc.data() as Map<String, dynamic>;
+
+        setState(() {
+          userName = userData['name'] ?? "User";
+          profileImage = userData['profileImage'] ?? "";
+        });
+
+        print("Fetched User Data: $userData");
+      } else {
+        print("User document does not exist!");
+      }
     } else {
-      print("User data does not exist!");
+      print("No user is logged in!");
     }
   } catch (e) {
     print("Error fetching user data: $e");
   }
 }
-
 
 Future<void> generateMindFreshQuote() async {
   final Uri url = Uri.parse(
