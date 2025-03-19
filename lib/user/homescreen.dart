@@ -7,6 +7,8 @@ import 'package:mindmend/user/setgoalscreen.dart';
 import 'package:mindmend/user/user_guided_meditation.dart';  
 
 class HomePageScreen extends StatefulWidget {
+  const HomePageScreen({super.key});
+
   @override
   _HomePageScreenState createState() => _HomePageScreenState();
 }
@@ -34,7 +36,7 @@ class _HomePageScreenState extends State<HomePageScreen> {
         userName = userData['name'] ?? "User";
         profileImage = userData['profileImage'] ?? "";
       });
-      print("Fetched User Data: $userData"); // Debugging line
+      print("Fetched User Data: $userData");
     } else {
       print("User data does not exist!");
     }
@@ -83,8 +85,9 @@ Future<void> generateMindFreshQuote() async {
 Widget build(BuildContext context) {
   return Scaffold(
     appBar: AppBar(
-      title: Text("Mind Mend", style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold)),
+      title: Text("Mind Mend", style: TextStyle( fontSize: 22, fontWeight: FontWeight.bold)),
       backgroundColor: Colors.black,
+      foregroundColor: Colors.white,
       elevation: 5,
     ),
     body: Container(
