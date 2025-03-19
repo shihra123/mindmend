@@ -45,7 +45,7 @@ class _AdminHomePageState extends State<AdminHomePage> {
   final List<Widget> _pages = [
     ViewUsersScreen(), // View Users Page
     ManageTherapistScreen(), // Manage Therapists Page
-    ViewFeedbackScreen(), // View Feedback Page
+    AdminFeedbackScreen(), // View Feedback Page
     AppointmentDetailsScreen(), // View Appointments Page
   ];
 

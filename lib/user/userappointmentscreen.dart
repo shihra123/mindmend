@@ -115,7 +115,7 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text("Book an Appointment"),
-        backgroundColor: Colors.deepOrange,
+        backgroundColor: Colors.white,
       ),
       body: FutureBuilder<List<Map<String, dynamic>>>( // Fetch therapists from Firestore
         future: _fetchTherapists(),
@@ -160,7 +160,7 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
                           style: TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.bold,
-                            color: Colors.deepOrange,
+                            color: Colors.black,
                           ),
                         ),
                         subtitle: Text(
@@ -179,7 +179,7 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
                           ElevatedButton(
                             onPressed: () => _bookAppointment(therapist),
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.green,
+                              backgroundColor: Colors.black,
                               padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(8),
@@ -190,7 +190,7 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
                           ElevatedButton(
                             onPressed: () => _giveFeedback(therapist),
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.blue,
+                              backgroundColor: Colors.black12,
                               padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(8),
@@ -216,7 +216,7 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
       padding: const EdgeInsets.symmetric(vertical: 5),
       child: Row(
         children: [
-          Icon(icon, color: Colors.deepOrange),
+          Icon(icon, color: Colors.black),
           SizedBox(width: 10),
           Text(
             text,

@@ -87,7 +87,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
           Container(
             decoration: BoxDecoration(
               gradient: LinearGradient(
-                colors: [Colors.blue.shade800, Colors.lightBlue.shade400],
+                colors: [Colors.grey, Colors.grey],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
@@ -104,7 +104,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                     style: TextStyle(
                         fontSize: 22,
                         fontWeight: FontWeight.bold,
-                        color: Colors.white),
+                        color: Colors.black),
                   ),
                   const SizedBox(height: 20),
 
@@ -125,7 +125,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                     style: ElevatedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(
                           vertical: 16, horizontal: 50),
-                      backgroundColor: Colors.deepOrange,
+                      backgroundColor: Colors.black,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(30),
                       ),
@@ -172,11 +172,11 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
         keyboardType: keyboardType,
         autofocus: autoFocus,
         decoration: InputDecoration(
-          prefixIcon: Icon(icon, color: Colors.deepOrange),
+          prefixIcon: Icon(icon, color: Colors.black),
           labelText: label,
           hintText: hintText,
           hintStyle: TextStyle(color: Colors.grey[600]),
-          labelStyle: const TextStyle(color: Colors.deepOrange),
+          labelStyle: const TextStyle(color: Colors.black),
           filled: true,
           fillColor: Colors.white,
           border: OutlineInputBorder(

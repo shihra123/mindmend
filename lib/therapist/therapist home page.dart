@@ -15,7 +15,7 @@ class _TherapistHomePageState extends State<TherapistHomePage> {
   final List<Widget> _pages = [
     TherapistNotificationsScreen(therapistId: '',),
     MeditationScreen(),
-    TherapistAppointmentsScreen(),
+    AdminAppointmentsScreen(),
     ChatScreen(),
   ];
 

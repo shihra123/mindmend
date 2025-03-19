@@ -1,149 +1,140 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 
-class TherapistAppointmentsScreen extends StatefulWidget {
+class AdminAppointmentsScreen extends StatefulWidget {
   @override
-  _TherapistAppointmentsScreenState createState() =>
-      _TherapistAppointmentsScreenState();
+  _AdminAppointmentsScreenState createState() => _AdminAppointmentsScreenState();
 }
 
-class _TherapistAppointmentsScreenState
-    extends State<TherapistAppointmentsScreen> {
-  List<Map<String, dynamic>> appointments = [];
-  FirebaseAuth _auth = FirebaseAuth.instance;
-  FirebaseFirestore _firestore = FirebaseFirestore.instance;
+class _AdminAppointmentsScreenState extends State<AdminAppointmentsScreen> {
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  @override
-  void initState() {
-    super.initState();
-    _fetchAppointments();
-  }
-
-  Future<void> _fetchAppointments() async {
-    User? user = _auth.currentUser; // Get the logged-in user
-    if (user != null) {
-      try {
-        // Fetch appointments for the logged-in therapist from Firestore
-        QuerySnapshot snapshot = await _firestore
-            .collection('appointments')
-            .where('therapistId', isEqualTo: user.uid) // filter by therapistId
-            .get();
-
-        List<Map<String, dynamic>> fetchedAppointments = snapshot.docs
-            .map((doc) => {
-                  "client": doc['clientName'],
-                  "date": doc['date'],
-                  "time": doc['time'],
-                  "status": doc['status'],
-                  "id": doc.id,
-                })
-            .toList();
-
-        setState(() {
-          appointments = fetchedAppointments; // Update state with fetched data
-        });
-      } catch (e) {
-        print("Error fetching appointments: $e");
-      }
+  Future<List<Map<String, dynamic>>> _fetchAppointments() async {
+    try {
+      QuerySnapshot querySnapshot = await _firestore.collection('appointments').get();
+      return querySnapshot.docs.map((doc) {
+        return {
+          'id': doc.id,
+          ...doc.data() as Map<String, dynamic>,
+        };
+      }).toList();
+    } catch (e) {
+      print("Error fetching appointments: $e");
+      return [];
     }
   }
 
-  void _showAppointmentDetails(Map<String, dynamic> appointment) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text("Appointment Details"),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text("Client: ${appointment["client"]}"),
-            Text("Date: ${appointment["date"]}"),
-            Text("Time: ${appointment["time"]}"),
-            Text("Status: ${appointment["status"]}"),
-          ],
-        ),
-        actions: [
-          if (appointment["status"] != "Completed")
-            TextButton(
-              onPressed: () {
-                // Update appointment status to 'Completed' in Firestore
-                _firestore
-                    .collection('appointments')
-                    .doc(appointment['id'])
-                    .update({'status': 'Completed'}).then((_) {
-                  setState(() {
-                    appointment["status"] = "Completed";
-                  });
-                  Navigator.pop(context);
-                });
-              },
-              child: Text("Mark as Completed"),
-            ),
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text("Close"),
-          ),
-        ],
-      ),
-    );
+  Future<void> _updateAppointmentStatus(String appointmentId, String newStatus) async {
+    try {
+      await _firestore.collection('appointments').doc(appointmentId).update({
+        'status': newStatus,
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Appointment status updated")),
+      );
+
+      setState(() {}); // Refresh the list after update
+    } catch (e) {
+      print("Error updating appointment: $e");
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Therapist Appointments"),
-        backgroundColor: Colors.deepOrangeAccent,
+        title: Text("View Appointments"),
+        backgroundColor: Colors.black,
       ),
-      body: Container(
-        padding: EdgeInsets.all(10),
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Colors.blue.shade900, Colors.lightBlue.shade400],
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
+      body: FutureBuilder<List<Map<String, dynamic>>>(
+        future: _fetchAppointments(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Center(child: CircularProgressIndicator());
+          }
+          if (!snapshot.hasData || snapshot.data!.isEmpty) {
+            return Center(child: Text("No appointments found"));
+          }
+
+          final appointments = snapshot.data!;
+
+          return ListView.builder(
+            itemCount: appointments.length,
+            itemBuilder: (context, index) {
+              final appointment = appointments[index];
+
+              return Card(
+                margin: EdgeInsets.all(10),
+                elevation: 5,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildDetailRow(Icons.person, "User: ${appointment['userName'] ?? 'Unknown'}"),
+                      _buildDetailRow(Icons.healing, "Therapist: ${appointment['therapistName'] ?? 'Unknown'}"),
+                      _buildDetailRow(Icons.date_range, "Date: ${appointment['date'] ?? 'Not specified'}"),
+                      _buildDetailRow(Icons.access_time, "Time: ${appointment['time'] ?? 'Not specified'}"),
+                      _buildDetailRow(Icons.confirmation_number, "Token No: ${appointment['tokenNo'] ?? 'N/A'}"),
+                      _buildDetailRow(Icons.info, "Status: ${appointment['status'] ?? 'Pending'}"),
+
+                      SizedBox(height: 15),
+
+                      // Update Appointment Status Buttons
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          ElevatedButton(
+                            onPressed: () => _updateAppointmentStatus(appointment['id'], "Confirmed"),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.green,
+                              padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                            ),
+                            child: Text("Confirm", style: TextStyle(color: Colors.white)),
+                          ),
+                          ElevatedButton(
+                            onPressed: () => _updateAppointmentStatus(appointment['id'], "Cancelled"),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.red,
+                              padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                            ),
+                            child: Text("Cancel", style: TextStyle(color: Colors.white)),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildDetailRow(IconData icon, String text) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 5),
+      child: Row(
+        children: [
+          Icon(icon, color: Colors.black),
+          SizedBox(width: 10),
+          Text(
+            text,
+            style: TextStyle(fontSize: 16, color: Colors.black54),
           ),
-        ),
-        child: appointments.isEmpty
-            ? Center(
-                child: CircularProgressIndicator(),
-              )
-            : ListView.builder(
-                itemCount: appointments.length,
-                itemBuilder: (context, index) {
-                  var appointment = appointments[index];
-                  return Card(
-                    color: Colors.white,
-                    elevation: 4,
-                    margin: EdgeInsets.symmetric(vertical: 6),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: ListTile(
-                      leading:
-                          Icon(Icons.calendar_today, color: Colors.deepOrangeAccent),
-                      title: Text(
-                        appointment["client"],
-                        style: TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                      subtitle:
-                          Text("${appointment["date"]} - ${appointment["time"]}"),
-                      trailing: Text(
-                        appointment["status"],
-                        style: TextStyle(
-                          color: appointment["status"] == "Completed"
-                              ? Colors.green
-                              : Colors.redAccent,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      onTap: () => _showAppointmentDetails(appointment),
-                    ),
-                  );
-                },
-              ),
+        ],
       ),
     );
   }
