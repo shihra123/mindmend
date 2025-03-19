@@ -14,7 +14,7 @@ class HomePageScreen extends StatefulWidget {
 class _HomePageScreenState extends State<HomePageScreen> {
   String dailyQuote = "Loading...";
   String userName = "User";
-  String profileImage = "";
+  String profileImage = " ";
 
   @override
   void initState() {
