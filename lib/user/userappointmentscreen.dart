@@ -35,7 +35,7 @@ Future<void> _bookAppointment(Map<String, dynamic> therapist) async {
       context,
       MaterialPageRoute(
         builder: (context) => TherapistDetailsScreen(
-          therapist: therapist,  // Pass the entire therapist data
+
           therapistId: therapistId,  // Pass the therapist's ID
         ),
       ),

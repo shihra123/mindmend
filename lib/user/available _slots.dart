@@ -6,7 +6,7 @@ import 'package:mindmend/user/payment.dart';
 class TherapistDetailsScreen extends StatefulWidget {
   final String therapistId;
 
-  TherapistDetailsScreen({required this.therapistId, required Map therapist});
+  TherapistDetailsScreen({required this.therapistId});
 
   @override
   _TherapistDetailsScreenState createState() => _TherapistDetailsScreenState();
@@ -15,7 +15,18 @@ class TherapistDetailsScreen extends StatefulWidget {
 class _TherapistDetailsScreenState extends State<TherapistDetailsScreen> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   Map<String, dynamic>? therapistDetails;
-  DateTime? _selectedDate; // Variable to store the selected date
+  DateTime? _selectedDate;
+  String? _selectedSlot;
+  final List<String> availableSlots = [
+    '06:00 PM',
+    '06:30 PM',
+    '07:00 PM',
+    '07:30 PM',
+    '08:00 PM',
+    '08:30 PM',
+    '09:00 PM',
+    '10:00 PM',
+  ];
 
   @override
   void initState() {
@@ -25,10 +36,8 @@ class _TherapistDetailsScreenState extends State<TherapistDetailsScreen> {
 
   Future<void> _fetchTherapistDetails() async {
     try {
-      DocumentSnapshot docSnapshot = await _firestore
-          .collection('therapists')
-          .doc(widget.therapistId)
-          .get();
+      DocumentSnapshot docSnapshot =
+          await _firestore.collection('therapists').doc(widget.therapistId).get();
 
       if (docSnapshot.exists) {
         setState(() {
@@ -42,19 +51,30 @@ class _TherapistDetailsScreenState extends State<TherapistDetailsScreen> {
     }
   }
 
-  // Function to show the date picker
   Future<void> _selectDate(BuildContext context) async {
+    if (!mounted) return;
+
+    final DateTime today = DateTime.now();
+    final DateTime lastSelectableDate = today.add(Duration(days: 365));
+
     final DateTime? picked = await showDatePicker(
       context: context,
-      initialDate: DateTime.now(),
-      firstDate: DateTime(2020),
-      lastDate: DateTime(2025),
+      initialDate: today,
+      firstDate: today,
+      lastDate: lastSelectableDate,
+      builder: (context, child) {
+        return Theme(
+          data: ThemeData.light(),
+          child: child!,
+        );
+      },
     );
+
     if (picked != null && picked != _selectedDate) {
       setState(() {
         _selectedDate = picked;
+        _selectedSlot = null; // Reset slot selection when a new date is picked
       });
-      print('Selected Date: $_selectedDate');
     }
   }
 
@@ -127,7 +147,7 @@ class _TherapistDetailsScreenState extends State<TherapistDetailsScreen> {
                     ),
                     SizedBox(height: 20.0),
 
-                    // Date Picker Section
+                    // Select Date Section
                     Text(
                       'Select Date',
                       style: TextStyle(
@@ -135,9 +155,10 @@ class _TherapistDetailsScreenState extends State<TherapistDetailsScreen> {
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    SizedBox(height: 10.0),
                     ElevatedButton(
-                      onPressed: () => _selectDate(context),
+                      onPressed: () async {
+                        await _selectDate(context);
+                      },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.black,
                         padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
@@ -146,12 +167,22 @@ class _TherapistDetailsScreenState extends State<TherapistDetailsScreen> {
                         _selectedDate == null
                             ? 'Choose Date'
                             : 'Selected Date: ${_selectedDate!.toLocal()}'.split(' ')[0],
-                        style: TextStyle(fontSize: 16),
+                        style: TextStyle(fontSize: 16, color: Colors.white),
                       ),
                     ),
+
+                    if (_selectedDate != null) // Show selected date
+                      Padding(
+                        padding: const EdgeInsets.only(top: 10),
+                        child: Text(
+                          'Selected Date: ${_selectedDate!.toLocal()}'.split(' ')[0],
+                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                        ),
+                      ),
+
                     SizedBox(height: 20.0),
 
-                    // Available Time Slots
+                    // Available Time Slots Section
                     Text(
                       'Available Time Slots',
                       style: TextStyle(
@@ -163,22 +194,33 @@ class _TherapistDetailsScreenState extends State<TherapistDetailsScreen> {
                     Wrap(
                       spacing: 8.0,
                       runSpacing: 8.0,
-                      children: [
-                        '06:00 PM',
-                        '06:30 PM',
-                        '07:00 PM',
-                        '07:30 PM',
-                        '08:00 PM',
-                        '08:30 PM',
-                        '09:00 PM',
-                        '10:00 PM',
-                      ].map((time) {
-                        return Chip(
-                          label: Text(time),
-                          backgroundColor: Colors.blue[100],
+                      children: availableSlots.map((time) {
+                        return GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              _selectedSlot = time;
+                            });
+                          },
+                          child: Chip(
+                            label: Text(time,
+                                style: TextStyle(
+                                    color: _selectedSlot == time ? Colors.white : Colors.black)),
+                            backgroundColor:
+                                _selectedSlot == time ? Colors.black : Colors.blue[100],
+                          ),
                         );
                       }).toList(),
                     ),
+
+                    if (_selectedSlot != null) // Show selected slot
+                      Padding(
+                        padding: const EdgeInsets.only(top: 10),
+                        child: Text(
+                          'Selected Slot: $_selectedSlot',
+                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                        ),
+                      ),
+
                     SizedBox(height: 20.0),
 
                     // Book Appointment Button
@@ -188,6 +230,10 @@ class _TherapistDetailsScreenState extends State<TherapistDetailsScreen> {
                           if (_selectedDate == null) {
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(content: Text('Please select a date')),
+                            );
+                          } else if (_selectedSlot == null) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text('Please select a time slot')),
                             );
                           } else {
                             Navigator.push(
