@@ -3,23 +3,19 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:firebase_database/firebase_database.dart';
 import 'package:mindmend/user/moodtracking.dart';
 import 'package:mindmend/user/setgoalscreen.dart';
 import 'package:mindmend/user/user_guided_meditation.dart';  
 
 class HomePageScreen extends StatefulWidget {
   const HomePageScreen({super.key});
-
   @override
   _HomePageScreenState createState() => _HomePageScreenState();
 }
-
 class _HomePageScreenState extends State<HomePageScreen> {
   String dailyQuote = "Loading...";
   String userName = '';
   String profileImage = " ";
-
   @override
   void initState() {
     super.initState();
@@ -28,24 +24,16 @@ class _HomePageScreenState extends State<HomePageScreen> {
   }
 Future<void> fetchUserData() async {
   try {
-    // Get the current logged-in user
     User? user = FirebaseAuth.instance.currentUser;
-
     if (user != null) {
       String userId = user.uid;
-
-      // Fetch user data from Firestore collection 'users'
       DocumentSnapshot userDoc = await FirebaseFirestore.instance.collection('users').doc(userId).get();
-
       if (userDoc.exists) {
         Map<String, dynamic> userData = userDoc.data() as Map<String, dynamic>;
-
         setState(() {
           userName = userData['name'] ?? "User";
           profileImage = userData['profileImage'] ?? "";
         });
-
-        print("Fetched User Data: $userData");
       } else {
         print("User document does not exist!");
       }
@@ -56,18 +44,15 @@ Future<void> fetchUserData() async {
     print("Error fetching user data: $e");
   }
 }
-
 Future<void> generateMindFreshQuote() async {
   final Uri url = Uri.parse(
     "https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=AIzaSyB2mKwjSjP2zeCLnXh6COx3RoxWMlaI2yY",
   );
-
   final Map<String, dynamic> requestBody = {
     "contents": [
       {"parts": [{"text": "Give me a random, fresh, mind-refreshing health quote. Avoid repetition."}]}
     ]
   };
-
   try {
     final response = await http.post(
       url,
@@ -91,9 +76,8 @@ Future<void> generateMindFreshQuote() async {
     });
   }
 }
-
- @override
-Widget build(BuildContext context) {
+@override
+Widget build(BuildContext context){
   return Scaffold(
     appBar: AppBar(
       title: Text("Mind Mend", style: TextStyle( fontSize: 22, fontWeight: FontWeight.bold)),
@@ -179,7 +163,6 @@ Widget build(BuildContext context) {
     ),
   );
 }
-
   Widget _buildSectionTitle(String title) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 10),
@@ -190,7 +173,6 @@ Widget build(BuildContext context) {
       ),
     );
   }
-
   Widget _buildQuoteCard(String quote) {
     return Card(
       color: Colors.black,

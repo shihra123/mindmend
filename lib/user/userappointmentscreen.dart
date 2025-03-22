@@ -28,14 +28,12 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
 
 Future<void> _bookAppointment(Map<String, dynamic> therapist) async {
   try {
-    final therapistId = therapist['uid']; // Assuming 'uid' is the field for therapist ID
-
-    // Navigate to the TherapistDetailsScreen and pass both therapist data and therapistId
+    final therapistId = therapist['uid']; 
     Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => TherapistDetailsScreen(
-          therapist: therapist,  // Pass the entire therapist data
+
           therapistId: therapistId,  // Pass the therapist's ID
         ),
       ),
