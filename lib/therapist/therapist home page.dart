@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:mindmend/therapist/therapist%20meditation.dart';
-import 'package:mindmend/therapist/therapist%20messaging%20screen.dart';
+import 'package:mindmend/therapist/homscreen.dart';
+import 'package:mindmend/therapist/therapist_appointment.dart';
+import 'package:mindmend/therapist/therapist_profile.dart';
 import 'package:mindmend/therapist/therapist%20notification.dart';
-import 'package:mindmend/therapist/view%20appointment.dart';
+
 
 class TherapistHomePage extends StatefulWidget {
   @override
@@ -13,10 +14,10 @@ class _TherapistHomePageState extends State<TherapistHomePage> {
   int _selectedIndex = 0;
 
   final List<Widget> _pages = [
+    TherapistHomeScreen(),
+    TherapistAppointmentsScreen(),
     TherapistNotificationsScreen(therapistId: '',),
-    MeditationScreen(),
-    AdminAppointmentsScreen(),
-    ChatScreen(),
+    TherapistProfileScreen(),
   ];
 
   void _onItemTapped(int index) {
@@ -59,20 +60,20 @@ class _TherapistHomePageState extends State<TherapistHomePage> {
             showUnselectedLabels: false,
             items: const [
               BottomNavigationBarItem(
-                icon: Icon(Icons.notifications, size: 30),
-                label: "Notifications",
-              ),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.self_improvement, size: 30),
-                label: "Meditation",
+                icon: Icon(Icons.home, size: 30),
+                label: "Home",
               ),
               BottomNavigationBarItem(
                 icon: Icon(Icons.calendar_today, size: 30),
                 label: "Appointments",
               ),
               BottomNavigationBarItem(
-                icon: Icon(Icons.message, size: 30),
-                label: "Messages",
+                icon: Icon(Icons.notifications, size: 30),
+                label: "Notifications",
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.person, size: 30),
+                label: "Profile",
               ),
             ],
           ),
@@ -81,4 +82,3 @@ class _TherapistHomePageState extends State<TherapistHomePage> {
     );
   }
 }
-
