@@ -50,33 +50,33 @@ class _TherapistDetailsScreenState extends State<TherapistDetailsScreen> {
       print("Error fetching therapist details: $e");
     }
   }
+ Future<void> _selectDate(BuildContext context) async {
+  if (!mounted) return;
 
-  Future<void> _selectDate(BuildContext context) async {
-    if (!mounted) return;
+  final DateTime today = DateTime.now();
+  final DateTime lastSelectableDate = today.add(Duration(days: 365));
 
-    final DateTime today = DateTime.now();
-    final DateTime lastSelectableDate = today.add(Duration(days: 365));
+  final DateTime? picked = await showDatePicker(
+    context: context,
+    initialDate: today,
+    firstDate: today,
+    lastDate: lastSelectableDate,
+    builder: (context, child) {
+      return Theme(
+        data: ThemeData.light(),
+        child: child!,
+      );
+    },
+  );
 
-    final DateTime? picked = await showDatePicker(
-      context: context,
-      initialDate: today,
-      firstDate: today,
-      lastDate: lastSelectableDate,
-      builder: (context, child) {
-        return Theme(
-          data: ThemeData.light(),
-          child: child!,
-        );
-      },
-    );
+  if (picked != null) {
+    setState(() {
+      _selectedDate = picked;
+      print("Selected Date: $_selectedDate");
 
-    if (picked != null && picked != _selectedDate) {
-      setState(() {
-        _selectedDate = picked;
-        _selectedSlot = null; // Reset slot selection when a new date is picked
-      });
-    }
+    });
   }
+}
 
   @override
   Widget build(BuildContext context) {
@@ -96,7 +96,7 @@ class _TherapistDetailsScreenState extends State<TherapistDetailsScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Therapist Info Section
+                    
                     Card(
                       elevation: 4,
                       shape: RoundedRectangleBorder(
@@ -146,43 +146,35 @@ class _TherapistDetailsScreenState extends State<TherapistDetailsScreen> {
                       ),
                     ),
                     SizedBox(height: 20.0),
-
-                    // Select Date Section
-                    Text(
-                      'Select Date',
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    ElevatedButton(
-                      onPressed: () async {
-                        await _selectDate(context);
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.black,
-                        padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                      ),
-                      child: Text(
-                        _selectedDate == null
-                            ? 'Choose Date'
-                            : 'Selected Date: ${_selectedDate!.toLocal()}'.split(' ')[0],
-                        style: TextStyle(fontSize: 16, color: Colors.white),
-                      ),
-                    ),
-
-                    if (_selectedDate != null) // Show selected date
-                      Padding(
-                        padding: const EdgeInsets.only(top: 10),
-                        child: Text(
-                          'Selected Date: ${_selectedDate!.toLocal()}'.split(' ')[0],
-                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                        ),
-                      ),
-
-                    SizedBox(height: 20.0),
-
-                    // Available Time Slots Section
+   Text(
+      'Select Date',
+      style: TextStyle(
+        fontSize: 20,
+        fontWeight: FontWeight.bold,
+      ),
+    ),
+    SizedBox(height: 10),
+    ElevatedButton(
+      onPressed: () async {
+        await _selectDate(context);
+      },
+      style: ElevatedButton.styleFrom(
+        backgroundColor: Colors.black,
+        padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+      ),
+      child: Text(
+        _selectedDate == null
+            ? 'Choose Date'
+            : 'Selected: ${_selectedDate!.toLocal()}'.split(' ')[0],
+        style: TextStyle(fontSize: 16, color: Colors.white),
+      ),
+    ),
+    SizedBox(height: 10),
+    if (_selectedDate != null)
+      Text(
+        '${_selectedDate!.toLocal()}'.split(' ')[0],
+        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+      ),
                     Text(
                       'Available Time Slots',
                       style: TextStyle(
