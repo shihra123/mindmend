@@ -6,6 +6,7 @@ import 'package:mindmend/firebase_options.dart';
 import 'package:mindmend/splash.dart';
 import 'package:mindmend/therapist/therapist%20home%20page.dart';
 import 'package:mindmend/therapist/therapist%20signup.dart';
+import 'package:mindmend/user/login.dart';
 import 'package:mindmend/user/moodtracking.dart';
 import 'package:mindmend/user/setgoalscreen.dart';
 import 'package:mindmend/user/user_%20signup_screen.dart';
@@ -29,7 +30,8 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
        routes: {
         '/': (context) => SplashScreen(), 
-        '/choose': (context) =>  WelcomeScreen(), 
+        '/choose': (context) =>  WelcomeScreen(),
+        '/login': (context) => LoginScreen(), 
         '/userSignup': (context) => UserSignupScreen(), 
         '/userHome': (context) => UserHomePage(), 
         '/userProfile': (context) => UserProfileScreen(),
