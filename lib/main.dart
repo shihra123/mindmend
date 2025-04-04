@@ -6,9 +6,12 @@ import 'package:mindmend/firebase_options.dart';
 import 'package:mindmend/splash.dart';
 import 'package:mindmend/therapist/therapist%20home%20page.dart';
 import 'package:mindmend/therapist/therapist%20signup.dart';
+import 'package:mindmend/user/moodtracking.dart';
+import 'package:mindmend/user/setgoalscreen.dart';
 import 'package:mindmend/user/user_%20signup_screen.dart';
 import 'package:mindmend/user/user_home.dart';
 import 'package:mindmend/user/user_profile_screen.dart';
+import 'package:mindmend/user/userappointmentscreen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -24,12 +27,20 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Mind Mend',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(
-            seedColor: Colors.deepOrange), 
-        useMaterial3: true,
-      ),
-      home: SplashScreen(), 
+       routes: {
+        '/': (context) => SplashScreen(), 
+        '/choose': (context) =>  WelcomeScreen(), 
+        '/userSignup': (context) => UserSignupScreen(), 
+        '/userHome': (context) => UserHomePage(), 
+        '/userProfile': (context) => UserProfileScreen(),
+        '/therapistSignup': (context) => TherapistSignupScreen(), 
+        '/therapistHome': (context) => TherapistHomePage(), 
+        '/adminHome': (context) => AdminHomePage(), 
+        '/dailyGoals': (context) => TodoListScreen(),
+        '/therapistList': (context) => BookAppointmentScreen(),
+        '/moodTracker': (context) =>MoodTrackingScreen(), 
+      },
+     
     );
   }
 }
