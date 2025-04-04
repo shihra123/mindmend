@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:mindmend/user/editprofilescreen.dart';
+import 'package:mindmend/user/login.dart';
 
 class UserProfileScreen extends StatefulWidget {
   @override
@@ -20,7 +21,6 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
   void initState() {
     super.initState();
     uid = _auth.currentUser?.uid ?? '';
-    print('UID: $uid'); // Debugging: Check the UID
 
     if (uid.isNotEmpty) {
       _fetchUserProfile();
@@ -52,7 +52,6 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
       setState(() {
         isLoading = false;
       });
-      print('Error fetching user profile: $e'); // Log error
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("Error loading profile")),
       );
@@ -71,7 +70,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
   Future<void> _logout() async {
     try {
       await _auth.signOut();
-      Navigator.of(context).pushReplacementNamed('/login');
+      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => LoginScreen())); 
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -88,31 +87,33 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
       return Scaffold(
         appBar: AppBar(title: Text('Profile')),
         body: Center(child: CircularProgressIndicator()),
+        backgroundColor: Colors.black,
       );
     }
 
     if (userData == null) {
       return Scaffold(
         appBar: AppBar(title: Text('Profile')),
-        body: Center(child: Text('No profile data available')),
+        body: Center(child: Text('No profile data available', style: TextStyle(color: Colors.white))),
+        backgroundColor: Colors.black,
       );
     }
 
     return Scaffold(
       appBar: AppBar(
         title: Text('User Profile'),
-        backgroundColor: Colors.deepOrange,
+        backgroundColor: Colors.grey[900],
         elevation: 0,
       ),
+      backgroundColor: Colors.black,
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: SingleChildScrollView(
           child: Column(
             children: [
-              // Profile Image
               CircleAvatar(
                 radius: 75,
-                backgroundColor: Colors.white,
+                backgroundColor: Colors.grey[800],
                 backgroundImage: userData!['profileImage'] != null
                     ? NetworkImage(userData!['profileImage'])
                     : null,
@@ -121,107 +122,59 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                     : null,
               ),
               SizedBox(height: 20),
-
-              // Name
               Text(
                 userData!['name'] ?? '',
                 style: TextStyle(
                   fontSize: 26,
                   fontWeight: FontWeight.bold,
-                  color: Colors.deepOrange,
+                  color: Colors.white,
                 ),
               ),
               SizedBox(height: 10),
-
-              // Email
-              Row(
-                children: [
-                  Icon(Icons.email, color: Colors.deepOrange),
-                  SizedBox(width: 10),
-                  Text(
-                    userData!['email'] ?? '',
-                    style: TextStyle(fontSize: 18, color: Colors.black54),
-                  ),
-                ],
-              ),
-              SizedBox(height: 10),
-
-              // Phone
-              Row(
-                children: [
-                  Icon(Icons.phone, color: Colors.deepOrange),
-                  SizedBox(width: 10),
-                  Text(
-                    userData!['phone'] ?? '',
-                    style: TextStyle(fontSize: 18, color: Colors.black54),
-                  ),
-                ],
-              ),
-              SizedBox(height: 10),
-
-              // Date of Birth
-              Row(
-                children: [
-                  Icon(Icons.calendar_today, color: Colors.deepOrange),
-                  SizedBox(width: 10),
-                  Text(
-                    'DOB: ${userData!['dob'] ?? ''}',
-                    style: TextStyle(fontSize: 18, color: Colors.black54),
-                  ),
-                ],
-              ),
-              SizedBox(height: 10),
-
-              // Gender
-              Row(
-                children: [
-                  Icon(Icons.accessibility, color: Colors.deepOrange),
-                  SizedBox(width: 10),
-                  Text(
-                    'Gender: ${userData!['gender'] ?? ''}',
-                    style: TextStyle(fontSize: 18, color: Colors.black54),
-                  ),
-                ],
-              ),
+              _buildProfileDetail(Icons.email, userData!['email'] ?? ''),
+              _buildProfileDetail(Icons.phone, userData!['phone'] ?? ''),
+              _buildProfileDetail(Icons.calendar_today, 'DOB: ${userData!['dob'] ?? ''}'),
+              _buildProfileDetail(Icons.accessibility, 'Gender: ${userData!['gender'] ?? ''}'),
               SizedBox(height: 20),
-
-              // Edit Profile Button
-              ElevatedButton(
-                onPressed: _editProfile,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.deepOrange,
-                  padding: EdgeInsets.symmetric(horizontal: 30, vertical: 12),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  elevation: 4,
-                ),
-                child: Text(
-                  'Edit Profile',
-                  style: TextStyle(fontSize: 18, color: Colors.white),
-                ),
-              ),
+              _buildButton('Edit Profile', _editProfile),
               SizedBox(height: 20),
-
-              // Logout Button
-              ElevatedButton(
-                onPressed: _logout,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.deepOrange,
-                  padding: EdgeInsets.symmetric(horizontal: 30, vertical: 12),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  elevation: 4,
-                ),
-                child: Text(
-                  'Logout',
-                  style: TextStyle(fontSize: 18, color: Colors.white),
-                ),
-              ),
+              _buildButton('Logout', _logout),
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildProfileDetail(IconData icon, String text) {
+    return Row(
+      children: [
+        Icon(icon, color: Colors.white),
+        SizedBox(width: 10),
+        Expanded(
+          child: Text(
+            text,
+            style: TextStyle(fontSize: 18, color: Colors.white60),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildButton(String text, VoidCallback onPressed) {
+    return ElevatedButton(
+      onPressed: onPressed,
+      style: ElevatedButton.styleFrom(
+        backgroundColor: Colors.grey[800],
+        padding: EdgeInsets.symmetric(horizontal: 30, vertical: 12),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8),
+        ),
+        elevation: 4,
+      ),
+      child: Text(
+        text,
+        style: TextStyle(fontSize: 18, color: Colors.white),
       ),
     );
   }

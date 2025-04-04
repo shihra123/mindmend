@@ -96,17 +96,28 @@ class _TodoListScreenState extends State<TodoListScreen> {
     String userId = _auth.currentUser!.uid;
     return Scaffold(
       appBar: AppBar(
-        title: Text("To-Do List"),
-        backgroundColor: Colors.deepOrangeAccent,
+        title: Text("To-Do List", style: TextStyle(color: Colors.white)),
+        backgroundColor: Colors.black,foregroundColor: Colors.white,
       ),
-      body: Padding(
+      body: Container(
+        color: Colors.grey[900],
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             TextField(
               controller: _todoController,
-              decoration: InputDecoration(labelText: "Enter your task"),
+              decoration: InputDecoration(
+                labelText: "Enter your task",
+                labelStyle: TextStyle(color: Colors.white),
+                enabledBorder: OutlineInputBorder(
+                  borderSide: BorderSide(color: Colors.white),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderSide: BorderSide(color: Colors.grey),
+                ),
+              ),
+              style: TextStyle(color: Colors.white),
             ),
             SizedBox(height: 10),
             Row(
@@ -115,10 +126,10 @@ class _TodoListScreenState extends State<TodoListScreen> {
                   _selectedDate == null
                       ? "Select due date"
                       : DateFormat.yMd().format(_selectedDate!),
-                  style: TextStyle(fontSize: 16),
+                  style: TextStyle(fontSize: 16, color: Colors.white),
                 ),
                 IconButton(
-                  icon: Icon(Icons.calendar_today),
+                  icon: Icon(Icons.calendar_today, color: Colors.white),
                   onPressed: () => _selectDate(context),
                 ),
               ],
@@ -126,7 +137,7 @@ class _TodoListScreenState extends State<TodoListScreen> {
             ElevatedButton(
               onPressed: _addTodo,
               child: Text("Add Task"),
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.deepOrangeAccent),
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.grey[700],foregroundColor: Colors.white),
             ),
             SizedBox(height: 20),
             Expanded(
@@ -169,7 +180,7 @@ class _TodoListScreenState extends State<TodoListScreen> {
             padding: const EdgeInsets.symmetric(vertical: 10),
             child: Text(
               title,
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
             ),
           ),
         ListView.builder(
@@ -179,22 +190,27 @@ class _TodoListScreenState extends State<TodoListScreen> {
           itemBuilder: (context, index) {
             final todo = todos[index];
             return Card(
+              color: Colors.grey[800],
               margin: EdgeInsets.symmetric(vertical: 8),
               child: ListTile(
                 title: Text(
                   todo.title,
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
+                    color: Colors.white,
                     decoration: todo.isCompleted ? TextDecoration.lineThrough : TextDecoration.none,
                   ),
                 ),
-                subtitle: Text("Due: ${DateFormat.yMd().add_jm().format(todo.dueDate)}"),
+                subtitle: Text("Due: ${DateFormat.yMd().add_jm().format(todo.dueDate)}", style: TextStyle(color: Colors.grey[400])),
                 trailing: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Checkbox(
                       value: todo.isCompleted,
                       onChanged: (bool? value) => _toggleCompletion(todo),
+                      activeColor: Colors.white,
+                      checkColor: Colors.green,
+                      side: BorderSide(color: Colors.white),
                     ),
                     IconButton(
                       icon: Icon(Icons.delete, color: Colors.red),
