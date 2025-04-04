@@ -6,7 +6,7 @@ import 'package:mindmend/firebase_options.dart';
 import 'package:mindmend/splash.dart';
 import 'package:mindmend/therapist/therapist%20home%20page.dart';
 import 'package:mindmend/therapist/therapist%20signup.dart';
-import 'package:mindmend/user/login.dart';
+import 'package:mindmend/login.dart';
 import 'package:mindmend/user/moodtracking.dart';
 import 'package:mindmend/user/setgoalscreen.dart';
 import 'package:mindmend/user/user_%20signup_screen.dart';

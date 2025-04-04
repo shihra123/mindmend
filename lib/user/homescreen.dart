@@ -16,6 +16,7 @@ class _HomePageScreenState extends State<HomePageScreen> {
   String profileImage = "";
   TextEditingController searchController = TextEditingController();
   List<QueryDocumentSnapshot> searchResults = [];
+   final String userId = FirebaseAuth.instance.currentUser!.uid;
 
 
   @override
@@ -99,28 +100,35 @@ void searchTherapists(String query) async {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
-      body: SingleChildScrollView(
-        
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildHeader(),
-            SizedBox(height: 10),
-            _buildSearchBar(),
-             _buildSectionHeader(context, "Reboot your Mind", "", ''),
-            _buildQuoteCard(dailyQuote),
-            _buildSectionHeader(context, "Recommended Therapists", "See All", '/therapistList'),
-            _buildTherapistList(),
-            _buildSearchResults(),
-            _buildSectionHeader(context, "Daily Goals", "Set Goals", '/dailyGoals'),
-            _buildDailyGoalsSection(),
-            _buildSectionHeader(context, "Today's Mood", "Track Mood", '/moodTracker'),
-            _buildMoodTracker(),
-         
-            SizedBox(height: 20),
-            
-          ],
+      body: Container( decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Color.fromARGB(255, 142, 186, 236), Colors.white],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
+        ),
+        child: SingleChildScrollView(
+          
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildHeader(),
+              SizedBox(height: 10),
+              _buildSearchBar(),
+               _buildSectionHeader(context, "Reboot your Mind", "", ''),
+              _buildQuoteCard(dailyQuote),
+              _buildSectionHeader(context, "Recommended Therapists", "See All", '/therapistList'),
+              _buildTherapistList(),
+              _buildSearchResults(),
+              _buildSectionHeader(context, "Daily Goals", "Set Goals", '/dailyGoals'),
+              _buildDailyGoalsSection(userId),
+              _buildSectionHeader(context, "Today's Mood", "Track Mood", '/moodTracker'),
+              _buildMoodTracker(),
+           
+              SizedBox(height: 20),
+              
+            ],
+          ),
         ),
       ),
     );
@@ -354,50 +362,52 @@ width: double.infinity,
     );
   }
 
- 
- 
+ Widget _buildDailyGoalsSection(String userId) {
+  return Padding(
+    padding: const EdgeInsets.all(16.0),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          "Upcoming Tasks",
+          style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold,color: Color.fromARGB(255, 4, 39, 116)),
+        ),
+        const SizedBox(height: 10),
+        StreamBuilder(
+          stream: FirebaseFirestore.instance
+              .collection('todos')
+              .where('userId', isEqualTo: userId)
+              .where('isCompleted', isEqualTo: false)
+              .snapshots(),
+          builder: (context, snapshot) {
+            if (!snapshot.hasData) {
+              return const Center(child: CircularProgressIndicator());
+            }
 
-  Widget _buildDailyGoalsSection() {
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: Column(
-        children: [
-          TextField(
-            decoration: InputDecoration(
-              hintText: "Set your daily goal...",
-              prefixIcon: Icon(Icons.check_circle_outline, color: Colors.grey),
-              filled: true,
-              fillColor: Colors.white,
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(30),
-                borderSide: BorderSide.none,
-              ),
-            ),
-            onSubmitted: (goal) {
-              FirebaseFirestore.instance.collection('daily_goals').add({
-                'user': FirebaseAuth.instance.currentUser?.uid,
-                'goal': goal,
-                'timestamp': Timestamp.now(),
-              });
-            },
-          ),
-          SizedBox(height: 10),
-          StreamBuilder(
-            stream: FirebaseFirestore.instance.collection('daily_goals').snapshots(),
-            builder: (context, snapshot) {
-              if (!snapshot.hasData) return Center(child: CircularProgressIndicator());
-              var goals = snapshot.data!.docs;
-              return Column(
-                children: goals.map((doc) => ListTile(
-                  title: Text(doc['goal']),
-                )).toList(),
-              );
-            },
-          ),
-        ],
-      ),
-    );
-  }
+            var todos = snapshot.data!.docs;
+
+            if (todos.isEmpty) {
+              return const Text("No upcoming tasks.");
+            }
+
+            return Column(
+              children: todos.map((doc) {
+                final data = doc.data() as Map<String, dynamic>;
+                return ListTile(
+                  title: Text(data['title'] ?? 'No Title'),
+                
+                  trailing: Icon(Icons.access_time, color: Colors.orange),
+                );
+              }).toList(),
+            );
+          },
+        ),
+      ],
+    ),
+  );
+}
+
+
   Widget _buildMoodTracker() {
     return Padding(
    padding: const EdgeInsets.all(16.0),

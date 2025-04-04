@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mindmend/user/homescreen.dart';
-import 'package:mindmend/user/user_notification%20screen.dart';
 import 'package:mindmend/user/user_profile_screen.dart';
-import 'package:mindmend/user/userappointmentscreen.dart'; // Importing My Appointments Screen
+import 'package:mindmend/user/userappointmentscreen.dart';
 
 class UserHomePage extends StatefulWidget {
   const UserHomePage({super.key});
@@ -14,15 +13,14 @@ class UserHomePage extends StatefulWidget {
 class _UserHomePageState extends State<UserHomePage> {
   int _selectedIndex = 0;
 
-  // List of pages corresponding to each tab
+ 
   final List<Widget> _pages = [
-    HomePageScreen(), // Home Page
-    UserProfileScreen(), // User Profile
-    BookAppointmentScreen(), // My Appointments
-  //  UserMessagingScreen(), // Messaging
+    HomePageScreen(), 
+    UserProfileScreen(),
+    BookAppointmentScreen(), 
+  //  UserMessagingScreen(), 
   ];
 
-  // Method to handle the tab selection
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mindmend/therapist/therapist%20signup.dart';
-import 'package:mindmend/user/login.dart';
+import 'package:mindmend/login.dart';
 import 'package:mindmend/user/user_%20signup_screen.dart';
 
 class WelcomeScreen extends StatelessWidget {

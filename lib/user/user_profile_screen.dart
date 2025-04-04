@@ -124,70 +124,78 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      
       body: isLoading
           ? Center(child: CircularProgressIndicator())
-          : SingleChildScrollView(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                children: [
-                  _buildHeader(),
-                  SizedBox(height: 20),
-                  _buildProfileImage(),
-                  SizedBox(height: 20),
-                  _buildEditableField("Name", Icons.person, nameController),
-                  _buildEditableField("Phone", Icons.phone, phoneController),
-                  _buildEditableField("Date of Birth", Icons.cake, dobController),
-                  _buildEditableField("Gender", Icons.wc, genderController),
-                  SizedBox(height: 30),
-                  ElevatedButton(
-                    onPressed: isEditing ? _saveProfile : () {
-                      setState(() => isEditing = true);
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blue.shade700,
-                      padding: EdgeInsets.symmetric(horizontal: 30, vertical: 12),
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12)),
-                    ),
-                    child: Text(isEditing ? "Save Changes" : "Edit Profile",
-                        style: TextStyle(color: Colors.white, fontSize: 18)),
-                  ),
-                  SizedBox(height: 10),
-                  TextButton(
-                    onPressed: () {
-                      setState(() => showChangePassword = !showChangePassword);
-                    },
-                    child: Text(
-                      showChangePassword ? "Cancel Change Password" : "Change Password",
-                      style: TextStyle(color: Colors.blue),
-                    ),
-                  ),
-                  if (showChangePassword) ...[
-                    _buildPasswordField("Current Password", currentPassController),
-                    _buildPasswordField("New Password", newPassController),
-                    _buildPasswordField("Confirm Password", confirmPassController),
+          : Container( decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Color.fromARGB(255, 142, 186, 236), Colors.white],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
+        ),
+            child: SingleChildScrollView(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  children: [
+                    _buildHeader(),
+                    SizedBox(height: 20),
+                    _buildProfileImage(),
+                    SizedBox(height: 20),
+                    _buildEditableField("Name", Icons.person, nameController),
+                    _buildEditableField("Phone", Icons.phone, phoneController),
+                    _buildEditableField("Date of Birth", Icons.cake, dobController),
+                    _buildEditableField("Gender", Icons.wc, genderController),
+                    SizedBox(height: 30),
                     ElevatedButton(
-                      onPressed: _changePassword,
+                      onPressed: isEditing ? _saveProfile : () {
+                        setState(() => isEditing = true);
+                      },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blueAccent,
-                        padding: EdgeInsets.symmetric(horizontal: 24, vertical: 10),
+                        backgroundColor: Colors.blue.shade700,
+                        padding: EdgeInsets.symmetric(horizontal: 30, vertical: 12),
                         shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12)),
                       ),
-                      child: Text("Update Password",
-                          style: TextStyle(color: Colors.white)),
+                      child: Text(isEditing ? "Save Changes" : "Edit Profile",
+                          style: TextStyle(color: Colors.white, fontSize: 18)),
+                    ),
+                    SizedBox(height: 10),
+                    TextButton(
+                      onPressed: () {
+                        setState(() => showChangePassword = !showChangePassword);
+                      },
+                      child: Text(
+                        showChangePassword ? "Cancel Change Password" : "Change Password",
+                        style: TextStyle(color: Colors.blue),
+                      ),
+                    ),
+                    if (showChangePassword) ...[
+                      _buildPasswordField("Current Password", currentPassController),
+                      _buildPasswordField("New Password", newPassController),
+                      _buildPasswordField("Confirm Password", confirmPassController),
+                      ElevatedButton(
+                        onPressed: _changePassword,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.blueAccent,
+                          padding: EdgeInsets.symmetric(horizontal: 24, vertical: 10),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12)),
+                        ),
+                        child: Text("Update Password",
+                            style: TextStyle(color: Colors.white)),
+                      ),
+                    ],
+                    SizedBox(height: 20),
+                    TextButton(
+                      onPressed: _logout,
+                      child: Text("Logout",
+                          style: TextStyle(color: Colors.red, fontSize: 16)),
                     ),
                   ],
-                  SizedBox(height: 20),
-                  TextButton(
-                    onPressed: _logout,
-                    child: Text("Logout",
-                        style: TextStyle(color: Colors.red, fontSize: 16)),
-                  ),
-                ],
+                ),
               ),
-            ),
+          ),
     );
   }
 
